@@ -27,6 +27,7 @@ class ALUTest(alu: ALU) extends PeekPokeTester(alu) {
     poke(alu.io.B, b)
     poke(alu.io.op, op.U)
     expect(alu.io.result, result)
+    step(1) // just for render vcd
   }
 }
 
@@ -34,7 +35,7 @@ class ALUSpec extends FlatSpec with Matchers {
   behavior of "ALUSpec"
 
   it should "compute successfully" in {
-    chisel3.iotesters.Driver(() => new ALU) { alu =>
+    chisel3.iotesters.Driver.execute(Array("--generate-vcd-output", "on"), () => new ALU) { alu =>
       new ALUTest(alu)
     } should be(true)
   }

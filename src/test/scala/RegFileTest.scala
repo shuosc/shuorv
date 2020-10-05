@@ -30,7 +30,7 @@ class RegFileSpec extends FlatSpec with Matchers {
   behavior of "RegFileSpec"
 
   it should "read and write successfully" in {
-    chisel3.iotesters.Driver(() => new RegFile) { regFile =>
+    chisel3.iotesters.Driver.execute(Array("--generate-vcd-output", "on"), () => new RegFile) { regFile =>
       new RegFileTest(regFile)
     } should be(true)
   }
