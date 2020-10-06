@@ -13,6 +13,7 @@ class ImmTest(imm: Imm) extends PeekPokeTester(imm) {
   for ((instruction, result) <- cases) {
     poke(imm.io.instruction, instruction.U)
     expect(imm.io.result, result)
+    step(1) // just for render vcd
   }
 }
 
@@ -20,7 +21,7 @@ class ImmSpec extends FlatSpec with Matchers {
   behavior of "ImmSpec"
 
   it should "generate imm successfully" in {
-    chisel3.iotesters.Driver(() => new Imm) { imm =>
+    chisel3.iotesters.Driver.execute(Array("--generate-vcd-output", "on"), () => new Imm) { imm =>
       new ImmTest(imm)
     } should be(true)
   }
