@@ -25,7 +25,7 @@ class ALUTest(alu: ALU) extends PeekPokeTester(alu) {
   for ((a, b, op, result) <- cases) {
     poke(alu.io.A, a)
     poke(alu.io.B, b)
-    poke(alu.io.op, op.U)
+    poke(alu.io.op, op)
     expect(alu.io.result, result)
     step(1) // just for render vcd
   }

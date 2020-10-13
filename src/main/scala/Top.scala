@@ -1,24 +1,158 @@
 import chisel3._
-import chisel3.stage.ChiselGeneratorAnnotation
+import chisel3.util._
 
 class Top extends Module {
+
+  import CommandType._
+
   val io = IO(new Bundle {
-    val A = Input(UInt(32.W))
-    val B = Input(UInt(32.W))
-    val op = Input(UInt(32.W))
-    val result = Output(UInt(32.W))
+    val gpio = Output(UInt(32.W))
   })
+
+  val pc = RegInit(0.U(32.W))
+  pc := pc + 4.U
+
+  val programROM = Module(new ProgramROM)
+  programROM.io.address := pc
+
+  val instruction = Wire(UInt(32.W))
+  instruction := programROM.io.value
+
+  val regFile = Module(new RegFile)
+  regFile.io.addressInput := instruction(11, 7)
+  regFile.io.addressA := instruction(19, 15)
+  regFile.io.addressB := instruction(24, 20)
+  regFile.io.input := 0xdead.U
+  regFile.io.writeEnable := false.B
+
+  val addressSpace = Module(new AddressSpace)
+  addressSpace.io.read_mode := true.B
+  addressSpace.io.maskLevel := Mask.WORD
+  addressSpace.io.addr := 0.U
+  addressSpace.io.dataIn := 0.U
+  io.gpio := addressSpace.io.gpioOut
+
+  val immGen = Module(new Imm)
+  immGen.io.instruction := instruction
+
+  val branchCondition = Module(new BranchCondition)
+  branchCondition.io.A := regFile.io.outputA
+  branchCondition.io.B := regFile.io.outputB
+  branchCondition.io.op := instruction(14, 12)
+
   val alu = Module(new ALU)
-  alu.io.A := io.A
-  alu.io.B := io.B
-  alu.io.op := io.op
-  io.result := alu.io.result
+  alu.io.A := 0xdead.U
+  alu.io.B := 0xdead.U
+  alu.io.op := 0xdead.U
+
+  val stall = RegInit(false.B)
+
+  when(stall) {
+    stall := false.B
+    regFile.io.writeEnable := true.B
+    // second part of load
+    switch(instruction(14, 12)) {
+      is("b000".U) {
+        regFile.io.input := addressSpace.io.dataOut(7, 0)
+      }
+      is("b001".U) {
+        regFile.io.input := addressSpace.io.dataOut(15, 0)
+      }
+      is("b010".U) {
+        regFile.io.input := addressSpace.io.dataOut
+      }
+      is("b100".U) {
+        regFile.io.input := addressSpace.io.dataOut
+      }
+      is("b101".U) {
+        regFile.io.input := addressSpace.io.dataOut
+      }
+    }
+  }.otherwise {
+    switch(instruction(6, 2)) {
+      is(LUI) {
+        regFile.io.input := immGen.io.result.asUInt()
+        regFile.io.writeEnable := true.B
+      }
+      is(AUIPC) {
+        alu.io.A := immGen.io.result.asUInt()
+        alu.io.B := pc
+        alu.io.op := ALUOperation.ADD
+
+        regFile.io.input := alu.io.result
+        regFile.io.writeEnable := true.B
+      }
+      is(JAL) {
+        alu.io.A := 4.U
+        alu.io.B := pc
+        alu.io.op := ALUOperation.ADD
+
+        regFile.io.input := alu.io.result
+        regFile.io.writeEnable := true.B
+        pc := (pc.asSInt() + immGen.io.result).asUInt()
+      }
+      is(JALR) {
+        alu.io.A := regFile.io.outputA
+        alu.io.B := immGen.io.result.asUInt()
+        alu.io.op := ALUOperation.ADD
+
+        regFile.io.input := pc + 4.U
+        regFile.io.writeEnable := true.B
+        pc := alu.io.result & "hfffffffe".U
+      }
+      is(BRANCH) {
+        when(branchCondition.io.take) {
+          pc := (pc.asSInt() + immGen.io.result).asUInt()
+        }
+      }
+      is(LOAD) {
+        // first part of load: send a load command to addressSpace
+        addressSpace.io.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        addressSpace.io.maskLevel := instruction(13, 12)
+        // stall once for waiting for the load result come out
+        pc := pc
+        stall := true.B
+      }
+      is(STORE) {
+        addressSpace.io.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        addressSpace.io.read_mode := false.B
+        addressSpace.io.maskLevel := instruction(13, 12)
+        addressSpace.io.dataIn := regFile.io.outputB
+      }
+      is(CALCULATE_IMM) {
+        regFile.io.writeEnable := true.B
+        alu.io.A := regFile.io.outputA
+        alu.io.B := immGen.io.result.asUInt()
+        alu.io.op := Cat(0.U(1), instruction(14, 12))
+        regFile.io.input := alu.io.result
+      }
+      is(CALCULATE_REG) {
+        regFile.io.writeEnable := true.B
+        alu.io.A := regFile.io.outputA
+        alu.io.B := regFile.io.outputB
+        alu.io.op := Cat(0.U(1), instruction(14, 12))
+        regFile.io.input := alu.io.result
+      }
+      is(FENCE) {
+        // we don't have multicore, pipeline, etc. now, so we don't need this command
+      }
+      is(ENV) {
+        // todo: we'll need this after implement interrupt
+      }
+    }
+  }
 }
 
-object Top extends App {
-  val stage = new chisel3.stage.ChiselStage
-  stage.execute(
-    Array[String](),
-    Seq(ChiselGeneratorAnnotation(() => new Top()))
-  )
+object CommandType extends Enumeration {
+  val LUI = "b01101".U
+  val AUIPC = "b00101".U
+  val JAL = "b11011".U
+  val JALR = "b11001".U
+  val BRANCH = "b11000".U
+  val LOAD = "b00000".U
+  val STORE = "b01000".U
+  val CALCULATE_IMM = "b00100".U
+  val CALCULATE_REG = "b01100".U
+  val FENCE = "b00011".U
+  val ENV = "b11100".U
 }

@@ -13,48 +13,48 @@ class ALU extends Module {
   })
   io.result := 0xdead.U
   switch(io.op) {
-    is(ADD.U) {
+    is(ADD) {
       io.result := io.A.asUInt + io.B.asUInt
     }
-    is(SUB.U) {
+    is(SUB) {
       io.result := io.A.asUInt - io.B.asUInt
     }
-    is(SHL.U) {
+    is(SHL) {
       io.result := io.A << io.B(4, 0).asUInt
     }
-    is(SLT.U) {
+    is(SLT) {
       io.result := io.A.asSInt < io.B.asSInt
     }
-    is(SLTU.U) {
+    is(SLTU) {
       io.result := io.A.asUInt < io.B.asUInt
     }
-    is(XOR.U) {
+    is(XOR) {
       io.result := io.A ^ io.B
     }
-    is(SRL.U) {
+    is(SRL) {
       io.result := io.A >> io.B(4, 0).asUInt
     }
-    is(SRA.U) {
+    is(SRA) {
       io.result := (io.A.asSInt >> io.B(4, 0)).asUInt()
     }
-    is(OR.U) {
+    is(OR) {
       io.result := io.A | io.B
     }
-    is(AND.U) {
+    is(AND) {
       io.result := io.A & io.B
     }
   }
 }
 
 object ALUOperation extends Enumeration {
-  val ADD = "b0000"
-  val SUB = "b1000"
-  val SHL = "b0001"
-  val SLT = "b0010"
-  val SLTU = "b0011"
-  val XOR = "b0100"
-  val SRL = "b0101"
-  val SRA = "b1101"
-  val OR = "b0110"
-  val AND = "b0111"
+  val ADD = "b0000".U
+  val SUB = "b1000".U
+  val SHL = "b0001".U
+  val SLT = "b0010".U
+  val SLTU = "b0011".U
+  val XOR = "b0100".U
+  val SRL = "b0101".U
+  val SRA = "b1101".U
+  val OR = "b0110".U
+  val AND = "b0111".U
 }
