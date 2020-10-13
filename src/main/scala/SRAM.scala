@@ -24,13 +24,7 @@ class ByteAddressedSRAM extends Module {
 
   import Mask._
 
-  val io = IO(new Bundle {
-    val read_mode = Input(Bool())
-    val addr = Input(UInt(12.W))
-    val maskLevel = Input(UInt(2.W))
-    val dataIn = Input(UInt(32.W))
-    val dataOut = Output(UInt(32.W))
-  })
+  val io = IO(new AddressIOInterface)
 
   val inner = Module(new SRAM)
   inner.io.enable := io.read_mode
