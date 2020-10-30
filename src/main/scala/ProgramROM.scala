@@ -22,7 +22,7 @@ class ProgramROM extends Module {
     "h007eeeb3".U(32.W), // or t4, t4, t2
     "h40000e37".U(32.W), // li t3, 0x40000000
     "h000e0e13".U(32.W),
-    "h01de2023".U(32.W), // sw t2, 0(t3)
+    "h01de2023".U(32.W), // sw t4, 0(t3)
     "h00138393".U(32.W), // addi t2, t2, 1
     "hfe1ff06f".U(32.W), // j label
   ))
