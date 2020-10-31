@@ -50,6 +50,8 @@ class Top extends Module {
   when(stall) {
     stall := false.B
     regFile.io.writeEnable := true.B
+    addressSpace.io.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+    addressSpace.io.maskLevel := instruction(13, 12)
     // second part of load
     switch(instruction(14, 12)) {
       is("b000".U) {
