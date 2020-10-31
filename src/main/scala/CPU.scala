@@ -49,6 +49,8 @@ class CPU extends Module {
   when(stall) {
     stall := false.B
     regFile.io.writeEnable := true.B
+    io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+    io.dataBusBundle.maskLevel := instruction(13, 12)
     // second part of load
     switch(instruction(14, 12)) {
       is("b000".U) {
