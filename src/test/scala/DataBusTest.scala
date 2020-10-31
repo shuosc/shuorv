@@ -3,16 +3,16 @@ import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 
 
-class AddressIOTest(addressSpace: AddressSpace) extends PeekPokeTester(addressSpace) {
+class DataBusTest(addressSpace: DataBus) extends PeekPokeTester(addressSpace) {
 
   import Mask._
 
   val cases = Array(
-    (false.B, 0.U(32.W), WORD, "hd8c7b6a5".U(32.W), "0", "0"),
-    (true.B, 0.U(32.W), WORD, "h00000000".U(32.W), "hd8c7b6a5", "0"),
+    (false.B, "h80020000".U(32.W), WORD, "hd8c7b6a5".U(32.W), "0", "0"),
+    (true.B, "h80020000".U(32.W), WORD, "h00000000".U(32.W), "hd8c7b6a5", "0"),
 
-    (false.B, "h40000000".U(32.W), WORD, "hd8c7b6a5".U(32.W), "0", "0"),
-    (true.B, 0.U(32.W), WORD, "h00000000".U(32.W), "hd8c7b6a5", "hd8c7b6a5"),
+    (false.B, "h10012000".U(32.W), WORD, "hd8c7b6a5".U(32.W), "0", "0"),
+    (true.B, "h80020000".U(32.W), WORD, "h00000000".U(32.W), "hd8c7b6a5", "hd8c7b6a5"),
   )
   for ((enable_read, address, maskLevel, dataIn, expectedDataOut, expectedGPIOOut) <- cases) {
     poke(addressSpace.io.read_mode, enable_read)
@@ -31,13 +31,13 @@ class AddressIOTest(addressSpace: AddressSpace) extends PeekPokeTester(addressSp
   }
 }
 
-class AddressedIOSpec extends FlatSpec with Matchers {
+class DataBusSpec extends FlatSpec with Matchers {
   behavior of "AddressedIOSpec"
 
 
   it should "read and write successfully" in {
-    chisel3.iotesters.Driver.execute(Array("--generate-vcd-output", "on"), () => new AddressSpace) { sram =>
-      new AddressIOTest(sram)
+    chisel3.iotesters.Driver.execute(Array("--generate-vcd-output", "on"), () => new DataBus) { sram =>
+      new DataBusTest(sram)
     } should be(true)
   }
 }

@@ -1,22 +1,28 @@
 import chisel3._
 import chisel3.util._
 
-class Top extends Module {
+class CPUBundle extends Bundle {
+  val programROMBundle = Flipped(new ProgramROMBundle)
+  val dataBusBundle = Flipped(new DataBusBundle)
+}
+
+class CPU extends Module {
 
   import CommandType._
 
-  val io = IO(new Bundle {
-    val gpio = Output(UInt(32.W))
-  })
+  val io = IO(new CPUBundle)
 
-  val pc = RegInit(0.U(32.W))
+  val pc = RegInit("h80000000".U(32.W))
   pc := pc + 4.U
-
-  val programROM = Module(new ProgramROM)
-  programROM.io.address := pc
+  io.programROMBundle.address := pc
 
   val instruction = Wire(UInt(32.W))
-  instruction := programROM.io.value
+  instruction := io.programROMBundle.value
+
+  io.dataBusBundle.read_mode := true.B
+  io.dataBusBundle.maskLevel := Mask.WORD
+  io.dataBusBundle.addr := 0.U
+  io.dataBusBundle.dataIn := 0.U
 
   val regFile = Module(new RegFile)
   regFile.io.addressInput := instruction(11, 7)
@@ -24,13 +30,6 @@ class Top extends Module {
   regFile.io.addressB := instruction(24, 20)
   regFile.io.input := 0xdead.U
   regFile.io.writeEnable := false.B
-
-  val addressSpace = Module(new DataBus)
-  addressSpace.io.read_mode := true.B
-  addressSpace.io.maskLevel := Mask.WORD
-  addressSpace.io.addr := 0.U
-  addressSpace.io.dataIn := 0.U
-  io.gpio := addressSpace.io.gpioOut
 
   val immGen = Module(new Imm)
   immGen.io.instruction := instruction
@@ -53,19 +52,19 @@ class Top extends Module {
     // second part of load
     switch(instruction(14, 12)) {
       is("b000".U) {
-        regFile.io.input := addressSpace.io.dataOut(7, 0)
+        regFile.io.input := io.dataBusBundle.dataOut(7, 0)
       }
       is("b001".U) {
-        regFile.io.input := addressSpace.io.dataOut(15, 0)
+        regFile.io.input := io.dataBusBundle.dataOut(15, 0)
       }
       is("b010".U) {
-        regFile.io.input := addressSpace.io.dataOut
+        regFile.io.input := io.dataBusBundle.dataOut
       }
       is("b100".U) {
-        regFile.io.input := addressSpace.io.dataOut
+        regFile.io.input := io.dataBusBundle.dataOut
       }
       is("b101".U) {
-        regFile.io.input := addressSpace.io.dataOut
+        regFile.io.input := io.dataBusBundle.dataOut
       }
     }
   }.otherwise {
@@ -107,17 +106,17 @@ class Top extends Module {
       }
       is(LOAD) {
         // first part of load: send a load command to addressSpace
-        addressSpace.io.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
-        addressSpace.io.maskLevel := instruction(13, 12)
+        io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        io.dataBusBundle.maskLevel := instruction(13, 12)
         // stall once for waiting for the load result come out
         pc := pc
         stall := true.B
       }
       is(STORE) {
-        addressSpace.io.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
-        addressSpace.io.read_mode := false.B
-        addressSpace.io.maskLevel := instruction(13, 12)
-        addressSpace.io.dataIn := regFile.io.outputB
+        io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        io.dataBusBundle.read_mode := false.B
+        io.dataBusBundle.maskLevel := instruction(13, 12)
+        io.dataBusBundle.dataIn := regFile.io.outputB
       }
       is(CALCULATE_IMM) {
         regFile.io.writeEnable := true.B
@@ -141,4 +140,18 @@ class Top extends Module {
       }
     }
   }
+}
+
+object CommandType extends Enumeration {
+  val LUI = "b01101".U
+  val AUIPC = "b00101".U
+  val JAL = "b11011".U
+  val JALR = "b11001".U
+  val BRANCH = "b11000".U
+  val LOAD = "b00000".U
+  val STORE = "b01000".U
+  val CALCULATE_IMM = "b00100".U
+  val CALCULATE_REG = "b01100".U
+  val FENCE = "b00011".U
+  val ENV = "b11100".U
 }
