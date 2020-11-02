@@ -18,10 +18,19 @@ class DataBus extends Module {
   val GPIO_END_ADDRESS = "h10013000"
 
   val io = IO(new DataBusBundle {
+    val timerInterruptPending = Output(Bool())
     val gpioOut = Output(UInt(32.W))
   })
+
+  val timer = Module(new Timer)
   val sram = Module(new ByteAddressedSRAM)
   val gpio = Module(new GPIOController)
+
+  timer.io.read_mode := true.B
+  timer.io.addr := 0.U(32.W)
+  timer.io.dataIn := 0.U(32.W)
+  timer.io.maskLevel := Mask.NONE
+
   sram.io.read_mode := true.B
   sram.io.addr := 0.U(32.W)
   sram.io.dataIn := 0.U(32.W)
@@ -34,6 +43,7 @@ class DataBus extends Module {
 
   io.dataOut := 0xdead.U(32.W)
   io.gpioOut := gpio.io.dataOut
+  io.timerInterruptPending := timer.io.interruptPending
 
   when(DATA_BASE_ADDRESS.U <= io.addr & io.addr < DATA_END_ADDRESS.U) {
     sram.io.dataIn := io.dataIn
@@ -47,5 +57,11 @@ class DataBus extends Module {
     gpio.io.maskLevel := io.maskLevel
     gpio.io.read_mode := io.read_mode
     io.dataOut := gpio.io.dataOut
+  }.otherwise {
+    timer.io.dataIn := io.dataIn
+    timer.io.addr := io.addr
+    timer.io.maskLevel := io.maskLevel
+    timer.io.read_mode := io.read_mode
+    io.dataOut := timer.io.dataOut
   }
 }
