@@ -180,6 +180,6 @@ object CommandType extends Enumeration {
 
 object SystemCommand extends Enumeration {
   val MRET = "h302".U
-  val ECALL = "b000000000000".U
-  val EBREAK = "b000000000001".U
+  val ECALL = "b000".U
+  val EBREAK = "b001".U
 }
