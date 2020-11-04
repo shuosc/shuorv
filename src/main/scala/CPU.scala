@@ -4,6 +4,7 @@ import chisel3.util._
 class CPUBundle extends Bundle {
   val programROMBundle = Flipped(new ProgramROMBundle)
   val dataBusBundle = Flipped(new DataBusBundle)
+  val timerInterruptPending = Input(Bool())
 }
 
 class CPU extends Module {
@@ -23,6 +24,13 @@ class CPU extends Module {
   io.dataBusBundle.maskLevel := Mask.WORD
   io.dataBusBundle.addr := 0.U
   io.dataBusBundle.dataIn := 0.U
+
+  val csr = Module(new CSR)
+  csr.io.write_en := false.B
+  csr.io.flipStatusMIE := false.B
+  csr.io.address := 0.U
+  csr.io.input_value := 0.U
+  csr.io.timerInterruptPending := io.timerInterruptPending
 
   val regFile = Module(new RegFile)
   regFile.io.addressInput := instruction(11, 7)
@@ -69,6 +77,12 @@ class CPU extends Module {
         regFile.io.input := io.dataBusBundle.dataOut
       }
     }
+  }.elsewhen(csr.io.interruptPending) {
+    csr.io.write_en := true.B
+    csr.io.flipStatusMIE := true.B
+    csr.io.address := CSRAddress.mepc
+    csr.io.input_value := pc + 4.U
+    pc := csr.io.pcOnInterrupt
   }.otherwise {
     switch(instruction(6, 2)) {
       is(LUI) {
@@ -137,8 +151,14 @@ class CPU extends Module {
       is(FENCE) {
         // we don't have multicore, pipeline, etc. now, so we don't need this command
       }
-      is(ENV) {
-        // todo: we'll need this after implement interrupt
+      is(SYSTEM) {
+        switch(instruction(31, 20)) {
+          is(SystemCommand.MRET) {
+            csr.io.flipStatusMIE := true.B
+            csr.io.address := CSRAddress.mepc
+            pc := csr.io.output_value
+          }
+        }
       }
     }
   }
@@ -155,5 +175,11 @@ object CommandType extends Enumeration {
   val CALCULATE_IMM = "b00100".U
   val CALCULATE_REG = "b01100".U
   val FENCE = "b00011".U
-  val ENV = "b11100".U
+  val SYSTEM = "b11100".U
+}
+
+object SystemCommand extends Enumeration {
+  val MRET = "h302".U
+  val ECALL = "b000000000000".U
+  val EBREAK = "b000000000001".U
 }

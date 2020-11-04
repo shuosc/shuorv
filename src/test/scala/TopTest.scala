@@ -3,7 +3,7 @@ import chisel3.iotesters._
 import org.scalatest.{FlatSpec, Matchers}
 
 class TopTest(top: Top) extends PeekPokeTester(top) {
-  for (i <- 0 to 8) {
+  for (i <- 0 to 15) {
     step(1)
   }
   expect(top.io.gpio, 5.U(32.W))
