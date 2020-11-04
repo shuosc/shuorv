@@ -87,7 +87,11 @@ create a pull request to `shuosc/master`, and check if your code can pass all th
 
 We'll check the pull request now and then, you may also request a review manually if you like.
     
+## Learning Material
+Below is something useful to know how to contribute this project, hope it would help you on your walkthrough
+#### Documentation
+* [RISCV Spec. Volumn I: User-Level ISA RV32I v2.0](https://content.riscv.org/wp-content/uploads/2019/06/riscv-spec.pdf)
+* [RISCV Spec. Volumn II: Privileged ISA v1.10, M-Mode and Debug CSR](https://content.riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf) 
 ## Need help?
-    
-Feel free to [open an issue here](https://github.com/shuosc/shuorv/issues)!
 
+Feel free to [open an issue here](https://github.com/shuosc/shuorv/issues)!
