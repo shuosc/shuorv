@@ -5,7 +5,7 @@ class CSR extends Module {
   val io = IO(new CSRBundle)
 
   val mie = RegInit(0xfff.U(12.W))
-  val mscratch = RegInit(1.U(32.W) << MIRField.MIE)
+  val mstatus = RegInit(1.U(32.W) << MIRField.MIE)
   val mtvec = RegInit("h80010000".U(32.W))
   val mcause = RegInit(0.U(32.W))
   val mip = Cat(0.U(4.W), io.timerInterruptPending, 0.U(7.W))
@@ -41,14 +41,14 @@ class CSR extends Module {
     }
   }
 
-  io.interruptPending := mscratch(MIRField.MIE) & (mie & mip).orR()
+  io.interruptPending := mstatus(MIRField.MIE) & (mie & mip).orR()
   io.pcOnInterrupt := mtvec
 
   when(io.flipStatusMIE) {
-    when(mscratch(MIRField.MIE) === 1.B) {
-      mscratch := mscratch & (~(1.U(32.W) << MIRField.MIE).asUInt()).asUInt()
+    when(mstatus(MIRField.MIE) === 1.B) {
+      mstatus := mstatus & (~(1.U(32.W) << MIRField.MIE).asUInt()).asUInt()
     }.otherwise {
-      mscratch := mscratch | (1.U(32.W) << MIRField.MIE).asUInt()
+      mstatus := mstatus | (1.U(32.W) << MIRField.MIE).asUInt()
     }
   }
 
