@@ -7,9 +7,11 @@
 For any OS which have installed docker, we provide a docker container to build the project.
 
 First clone the code and then run
+
 ```shell script
 docker run -it -v $(pwd)/:/shuorv shuorv-builder:latest bash
 ```
+
 under the code path, and the build system is ready.
 
 Note: If you want to view the waveform,
@@ -31,19 +33,21 @@ Note: Add `sudo` if necessary
   ```
 
 - Install `gtkwave` (you can skip this if you cannot or don't want to view the waveform)
+
   ```shell script
   apt install gtkwave
   ```
-  
+
 ## Get the code
 
 - Fork this repo under your own GitHub account.
 
 - Clone it to your computer
+
   ```shell
   git clone https://github.com/<your GitHub username>/shuorv
   ```
-  
+
 ## Create a new branch
 
 You need to `new` a branch with a meaningful name and `checkout` it.
@@ -62,6 +66,7 @@ Note: It is normal to take a very long time
 to download packages from maven 
 when you run `sbt` on the project for 
 the first time.
+
 ```shell script
 sbt test
 ```
@@ -80,6 +85,7 @@ git add <new file>
 git commit -m "<a meaningful message>"
 git push
 ```
+
 ## Create a pull request to this repo
 
 If your code work as expected, and you want to contribute to the upstream repo, please
@@ -87,11 +93,26 @@ create a pull request to `shuosc/master`, and check if your code can pass all th
 
 We'll check the pull request now and then, you may also request a review manually if you like.
     
+
 ## Learning Material
+
 Below is something useful to know how to contribute this project, hope it would help you on your walkthrough
+
 #### Documentation
-* [RISCV Spec. Volumn I: User-Level ISA RV32I v2.0](https://content.riscv.org/wp-content/uploads/2019/06/riscv-spec.pdf)
-* [RISCV Spec. Volumn II: Privileged ISA v1.10, M-Mode and Debug CSR](https://content.riscv.org/wp-content/uploads/2017/05/riscv-privileged-v1.10.pdf) 
+
+* [RISCV Spec. Volume 1, Unprivileged Spec v. 20191213](https://github.com/riscv/riscv-isa-manual/releases/download/Ratified-IMAFDQC/riscv-spec-20191213.pdf)
+* [RISCV Spec. Volume 2, Privileged Spec v. 20190608](https://github.com/riscv/riscv-isa-manual/releases/download/Ratified-IMFDQC-and-Priv-v1.11/riscv-privileged-20190608.pdf) 
+  And you can trace the latest spec version [here](https://riscv.org/technical/specifications/) 
+* [chisel](https://www.chisel-lang.org/)
+* [scala](https://docs.scala-lang.org/)
+* [sbt](https://www.scala-sbt.org/1.x/docs/)
+* [scala test](https://www.scalatest.org/user_guide)
+* [Our design](https://github.com/shuosc/shuorv/tree/main/doc)
+
+#### Books
+
+* [The chisel book](https://www.imm.dtu.dk/~masca/chisel-book-chinese.pdf)
+
 ## Need help?
 
 Feel free to [open an issue here](https://github.com/shuosc/shuorv/issues)!
