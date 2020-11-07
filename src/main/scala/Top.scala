@@ -16,4 +16,5 @@ class Top extends Module {
   io.gpio := dataBus.io.gpioOut
 
   cpu.io.programROMBundle <> programROM.io
+  cpu.io.timerInterruptPending := dataBus.io.timerInterruptPending
 }

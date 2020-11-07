@@ -10,6 +10,13 @@ class ProgramROMBundle extends Bundle {
 class ProgramROM extends Module {
   val io = IO(new ProgramROMBundle)
   val content = VecInit(Array(
+    "h00004fb7".U(32.W), // li t6, 0x4000
+    "h000f8f93".U(32.W),
+    "h01200513".U(32.W), // li a0, 0x12
+    "h00afa023".U(32.W), // sw a0, 0(t6)
+    "h00000513".U(32.W), // li a0, 0x0
+    "h00afa223".U(32.W), // sw a0, 4(t6)
+
     "h80020f37".U(32.W), // li t5, 0x80020000
     "h00100293".U(32.W), // li t0, 1
     "h00200313".U(32.W), // li t1, 2
@@ -30,5 +37,19 @@ class ProgramROM extends Module {
     "hfe1ff06f".U(32.W), // j label
   ))
 
-  io.value := content((io.address - "h80000000".U) (31, 2))
+  val interruptContent = VecInit(Array(
+    "h000fa503".U(32.W), // lw a0, 0(t6)
+    "h00a50533".U(32.W), // add a0, a0, a0
+    "h00afa023".U(32.W), // sw a0, 0(t6)
+    "h100125b7".U(32.W), // li a1, 0x10012000
+    "h00058593".U(32.W),
+    "h00a5a023".U(32.W), // sw a0, 0(a1)
+    "h30200073".U(32.W), // mret
+  ))
+
+  when(io.address < "h80010000".U) {
+    io.value := content((io.address - "h80000000".U) (31, 2))
+  }.otherwise {
+    io.value := interruptContent((io.address - "h80010000".U) (31, 2))
+  }
 }
