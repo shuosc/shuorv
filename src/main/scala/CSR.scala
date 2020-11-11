@@ -47,13 +47,8 @@ class CSR extends Module {
       is(CSRAddress.mtval) {
         mtval := io.input_value
       }
-      is(CSRAddress.mcycle) {
-        mcycle := io.input_value
-      }
-      is(CSRAddress.minstret) {
-        minstret := io.input_value
-      }
-      //to do:mcountinhibit
+      
+      //to do:mcountinhibit mcycle minstret
     }
   }.otherwise {
     switch(io.address) {
@@ -71,6 +66,12 @@ class CSR extends Module {
       }
       is(CSRAddress.mscratch) {
         io.output_value := mscratch
+      }
+      is(CSRAddress.mcause) {
+        io.output_value := mcause
+      }
+      is(CSRAddress.mtval) {
+        io.output_value := mtval
       }
     }
   }
