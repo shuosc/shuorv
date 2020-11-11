@@ -4,14 +4,14 @@ import chisel3.util._
 class CSR extends Module {
   val io = IO(new CSRBundle)
 
-  // to do: fill the blanks
-  // val mvendorid = 
-  // val marchid = 
-  // val mimpid = 
-  // val mhardid = 
+  
+  val mvendorid = RegInit(0.U(32.W))
+  val marchid = RegInit(0.U(32.W))
+  val mimpid = RegInit(0.U(32.W))
+  val mhardid = RegInit(0.U(32.W))
 
   val mstatus = RegInit(1.U(32.W) << MIRField.MIE)
-  val misa = "h40000000".U //
+  val misa = "h40000100".U //
   val mie = RegInit(0xfff.U(12.W))
   val mtvec = RegInit("h80010000".U(32.W))
   // val mcountinhibit =
@@ -23,8 +23,8 @@ class CSR extends Module {
   val mip = Cat(0.U(4.W), io.timerInterruptPending, 0.U(7.W))
   val mtval = RegInit(0.U(32.W))
 
-  // val mcycle = 
-  // val minstret =
+  val mcycle = RegInit(0.U(32.W))
+  val minstret = RegInit(0.U(32.W))
   // todo: replace these with a table driven way
   io.output_value := 0xdead.U
   when(io.write_en) {
@@ -38,6 +38,22 @@ class CSR extends Module {
       is(CSRAddress.mepc) {
         mepc := io.input_value
       }
+      is(CSRAddress.mscratch) {
+        mscratch := io.input_value
+      }
+      is(CSRAddress.mcause) {
+        mcause := io.input_value
+      }
+      is(CSRAddress.mtval) {
+        mtval := io.input_value
+      }
+      is(CSRAddress.mcycle) {
+        mcycle := io.input_value
+      }
+      is(CSRAddress.minstret) {
+        minstret := io.input_value
+      }
+      //to do:mcountinhibit
     }
   }.otherwise {
     switch(io.address) {
@@ -52,6 +68,9 @@ class CSR extends Module {
       }
       is(CSRAddress.mepc) {
         io.output_value := mepc
+      }
+      is(CSRAddress.mscratch) {
+        io.output_value := mscratch
       }
     }
   }
