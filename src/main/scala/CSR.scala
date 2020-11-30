@@ -82,7 +82,7 @@ class CSR extends Module {
       is(CSRAddress.mimpid) {
         io.output_value := mimpid
       }
-      is(CSRAddress.mhardid) {
+      is(CSRAddress.mhartid) {
         io.output_value := mhardid
       }
       is(CSRAddress.misa) {
@@ -122,7 +122,7 @@ object CSRAddress extends Enumeration {
   val mvendorid = 0xF11.U
   val marchid = 0xF12.U
   val mimpid = 0xF13.U
-  val mhardid = 0XF13.U
+  val mhartid = 0XF14.U
   
   val mstatus = 0x300.U
   val misa = 0x301.U
