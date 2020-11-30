@@ -73,6 +73,27 @@ class CSR extends Module {
       is(CSRAddress.mtval) {
         io.output_value := mtval
       }
+      is(CSRAddress.mvendorid) {
+        io.output_value := mvendorid
+      }
+      is(CSRAddress.marchid) {
+        io.output_value := marchid
+      }
+      is(CSRAddress.mimpid) {
+        io.output_value := mimpid
+      }
+      is(CSRAddress.mhardid) {
+        io.output_value := mhardid
+      }
+      is(CSRAddress.misa) {
+        io.output_value := misa
+      }
+      is(CSRAddress.mcycle) {
+        io.output_value := mcycle
+      }
+      is(CSRAddress.minstret) {
+        io.output_value := minstret
+      }
     }
   }
 
@@ -143,4 +164,3 @@ class CSRBundle extends CSRIOBundle {
 object InterruptType extends Enumeration {
   val Timer = 11
 }
-
