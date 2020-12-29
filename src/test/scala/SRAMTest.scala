@@ -16,8 +16,7 @@ class SRAMTest(sram: SRAM) extends PeekPokeTester(sram) {
 
     (false.B, 5.U(10.W), Vector(true.B, false.B, false.B, false.B), "h000000e9".U(32.W), "0"),
     (true.B, 4.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "hd8c7b6a5"),
-    (true.B, 5.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "h000000e9"),
-  )
+    (true.B, 5.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "h000000e9"))
   for ((enable, address, mask, dataIn, expectedDataOut) <- cases) {
     poke(sram.io.enable, enable)
     poke(sram.io.addr, address)
@@ -59,8 +58,7 @@ class ByteAddressedSRAMTest(sram: ByteAddressedSRAM) extends PeekPokeTester(sram
     (false.B, 0.U(12.W), WORD, "hd8c7b6a5".U(32.W), "0"),
     (true.B, 0.U(12.W), WORD, "h00000000".U(32.W), "hd8c7b6a5"),
     (true.B, 2.U(12.W), HALF_WORD, "h00000000".U(32.W), "h0000d8c7"),
-    (true.B, 3.U(12.W), BYTE, "h00000000".U(32.W), "h000000d8"),
-  )
+    (true.B, 3.U(12.W), BYTE, "h00000000".U(32.W), "h000000d8"))
   for ((enable_read, address, maskLevel, dataIn, expectedDataOut) <- cases) {
     poke(sram.io.read_mode, enable_read)
     poke(sram.io.addr, address)

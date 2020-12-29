@@ -4,7 +4,6 @@ import chisel3.util._
 class CSR extends Module {
   val io = IO(new CSRBundle)
 
-  
   val mvendorid = RegInit(0.U(32.W))
   val marchid = RegInit(0.U(32.W))
   val mimpid = RegInit(0.U(32.W))
@@ -15,8 +14,7 @@ class CSR extends Module {
   val mie = RegInit(0xfff.U(12.W))
   val mtvec = RegInit("h80010000".U(32.W))
   // val mcountinhibit =
-  
-  
+
   val mscratch =  RegInit(0.U(32.W))
   val mepc = RegInit(0.U(32.W))
   val mcause = RegInit(0.U(32.W))
@@ -47,8 +45,7 @@ class CSR extends Module {
       is(CSRAddress.mtval) {
         mtval := io.input_value
       }
-      
-      //to do:mcountinhibit mcycle minstret
+      // todo:mcountinhibit mcycle minstret
     }
   }.otherwise {
     switch(io.address) {
@@ -123,24 +120,18 @@ object CSRAddress extends Enumeration {
   val marchid = 0xF12.U
   val mimpid = 0xF13.U
   val mhartid = 0XF14.U
-  
   val mstatus = 0x300.U
   val misa = 0x301.U
   val mie = 0x304.U
   val mtvec = 0x305.U
-  
   val mcountinhibit = 0x320.U
-
   val mscratch = 0x340.U
   val mepc = 0x341.U
   val mcause = 0x342.U
   val mip = 0x344.U
   val mtval = 0x343.U
-  
   val mcycle = 0xB00.U
   val minstret = 0xB02.U
-  
- 
 }
 
 object MIRField extends Enumeration {

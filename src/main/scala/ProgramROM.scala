@@ -34,8 +34,8 @@ class ProgramROM extends Module {
     "h000e0e13".U(32.W),
     "h01de2023".U(32.W), // sw t4, 0(t3)
     "h00138393".U(32.W), // addi t2, t2, 1
-    "hfe1ff06f".U(32.W), // j label
-  ))
+    // j label
+    "hfe1ff06f".U(32.W)))
 
   val interruptContent = VecInit(Array(
     "h000fa503".U(32.W), // lw a0, 0(t6)
@@ -44,8 +44,8 @@ class ProgramROM extends Module {
     "h100125b7".U(32.W), // li a1, 0x10012000
     "h00058593".U(32.W),
     "h00a5a023".U(32.W), // sw a0, 0(a1)
-    "h30200073".U(32.W), // mret
-  ))
+    // mret
+    "h30200073".U(32.W)))
 
   when(io.address < "h80010000".U) {
     io.value := content((io.address - "h80000000".U) (31, 2))

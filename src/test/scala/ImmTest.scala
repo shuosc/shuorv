@@ -8,12 +8,13 @@ class ImmTest(imm: Imm) extends PeekPokeTester(imm) {
     ("h00112e23", 28), // S
     ("hf4e7d4e3", -184), // B
     ("h000007b7", 0), // U
-    ("h130000ef", 304), // J
-  )
+    // J
+    ("h130000ef", 304))
   for ((instruction, result) <- cases) {
     poke(imm.io.instruction, instruction.U)
     expect(imm.io.result, result)
-    step(1) // just for render vcd
+    // just for render vcd
+    step(1)
   }
 }
 
