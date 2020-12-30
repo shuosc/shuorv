@@ -4,12 +4,27 @@ import chisel3.util._
 class CSR extends Module {
   val io = IO(new CSRBundle)
 
-  val mie = RegInit(0xfff.U(12.W))
+  
+  val mvendorid = RegInit(0.U(32.W))
+  val marchid = RegInit(0.U(32.W))
+  val mimpid = RegInit(0.U(32.W))
+  val mhardid = RegInit(0.U(32.W))
+
   val mstatus = RegInit(1.U(32.W) << MIRField.MIE)
+  val misa = "h40000100".U //
+  val mie = RegInit(0xfff.U(12.W))
   val mtvec = RegInit("h80010000".U(32.W))
+  // val mcountinhibit =
+  
+  
+  val mscratch =  RegInit(0.U(32.W))
+  val mepc = RegInit(0.U(32.W))
   val mcause = RegInit(0.U(32.W))
   val mip = Cat(0.U(4.W), io.timerInterruptPending, 0.U(7.W))
-  val mepc = RegInit(0.U(32.W))
+  val mtval = RegInit(0.U(32.W))
+
+  val mcycle = RegInit(0.U(32.W))
+  val minstret = RegInit(0.U(32.W))
   // todo: replace these with a table driven way
   io.output_value := 0xdead.U
   when(io.write_en) {
@@ -23,6 +38,17 @@ class CSR extends Module {
       is(CSRAddress.mepc) {
         mepc := io.input_value
       }
+      is(CSRAddress.mscratch) {
+        mscratch := io.input_value
+      }
+      is(CSRAddress.mcause) {
+        mcause := io.input_value
+      }
+      is(CSRAddress.mtval) {
+        mtval := io.input_value
+      }
+      
+      //to do:mcountinhibit mcycle minstret
     }
   }.otherwise {
     switch(io.address) {
@@ -37,6 +63,36 @@ class CSR extends Module {
       }
       is(CSRAddress.mepc) {
         io.output_value := mepc
+      }
+      is(CSRAddress.mscratch) {
+        io.output_value := mscratch
+      }
+      is(CSRAddress.mcause) {
+        io.output_value := mcause
+      }
+      is(CSRAddress.mtval) {
+        io.output_value := mtval
+      }
+      is(CSRAddress.mvendorid) {
+        io.output_value := mvendorid
+      }
+      is(CSRAddress.marchid) {
+        io.output_value := marchid
+      }
+      is(CSRAddress.mimpid) {
+        io.output_value := mimpid
+      }
+      is(CSRAddress.mhartid) {
+        io.output_value := mhardid
+      }
+      is(CSRAddress.misa) {
+        io.output_value := misa
+      }
+      is(CSRAddress.mcycle) {
+        io.output_value := mcycle
+      }
+      is(CSRAddress.minstret) {
+        io.output_value := minstret
       }
     }
   }
@@ -63,12 +119,28 @@ class CSR extends Module {
 }
 
 object CSRAddress extends Enumeration {
+  val mvendorid = 0xF11.U
+  val marchid = 0xF12.U
+  val mimpid = 0xF13.U
+  val mhartid = 0XF14.U
+  
+  val mstatus = 0x300.U
+  val misa = 0x301.U
   val mie = 0x304.U
   val mtvec = 0x305.U
+  
+  val mcountinhibit = 0x320.U
+
   val mscratch = 0x340.U
   val mepc = 0x341.U
   val mcause = 0x342.U
   val mip = 0x344.U
+  val mtval = 0x343.U
+  
+  val mcycle = 0xB00.U
+  val minstret = 0xB02.U
+  
+ 
 }
 
 object MIRField extends Enumeration {
@@ -92,4 +164,3 @@ class CSRBundle extends CSRIOBundle {
 object InterruptType extends Enumeration {
   val Timer = 11
 }
-
