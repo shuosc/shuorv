@@ -21,8 +21,8 @@ class DataBusTest(addressSpace: DataBus) extends PeekPokeTester(addressSpace) {
     (true.B, "h0000bff8".U(32.W), WORD, "h00000000".U(32.W), "h0000000A", "0", true),
     (true.B, "h0000bff8".U(32.W), WORD, "h00000000".U(32.W), "h0000000B", "0", true))
   for ((enable_read, address, maskLevel, dataIn, expectedDataOut, expectedGPIOOut, timerIntPending) <- cases) {
-    poke(addressSpace.io.read_mode, enable_read)
-    poke(addressSpace.io.addr, address)
+    poke(addressSpace.io.readMode, enable_read)
+    poke(addressSpace.io.address, address)
     poke(addressSpace.io.maskLevel, maskLevel)
     poke(addressSpace.io.dataIn, dataIn)
 

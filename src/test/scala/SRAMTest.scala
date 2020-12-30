@@ -60,8 +60,8 @@ class ByteAddressedSRAMTest(sram: ByteAddressedSRAM) extends PeekPokeTester(sram
     (true.B, 2.U(12.W), HALF_WORD, "h00000000".U(32.W), "h0000d8c7"),
     (true.B, 3.U(12.W), BYTE, "h00000000".U(32.W), "h000000d8"))
   for ((enable_read, address, maskLevel, dataIn, expectedDataOut) <- cases) {
-    poke(sram.io.read_mode, enable_read)
-    poke(sram.io.addr, address)
+    poke(sram.io.readMode, enable_read)
+    poke(sram.io.address, address)
     poke(sram.io.maskLevel, maskLevel)
     poke(sram.io.dataIn, dataIn)
 
