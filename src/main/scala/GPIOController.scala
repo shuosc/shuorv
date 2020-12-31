@@ -6,9 +6,9 @@ import chisel3._
 // todo: consider a better way of handling GPIO
 class GPIOController extends Module {
   val io = IO(new DataBusBundle)
-  val current_value = RegInit(0.U(32.W))
-  io.dataOut := current_value
+  val currentValue = RegInit(0.U(32.W))
+  io.dataOut := currentValue
   when(io.maskLevel =/= Mask.NONE) {
-    current_value := io.dataIn
+    currentValue := io.dataIn
   }
 }

@@ -20,16 +20,16 @@ class CPU extends Module {
   val instruction = Wire(UInt(32.W))
   instruction := io.programROMBundle.value
 
-  io.dataBusBundle.read_mode := true.B
+  io.dataBusBundle.readMode := true.B
   io.dataBusBundle.maskLevel := Mask.WORD
-  io.dataBusBundle.addr := 0.U
+  io.dataBusBundle.address := 0.U
   io.dataBusBundle.dataIn := 0.U
 
   val csr = Module(new CSR)
-  csr.io.write_en := false.B
+  csr.io.writeEn := false.B
   csr.io.flipStatusMIE := false.B
   csr.io.address := 0.U
-  csr.io.input_value := 0.U
+  csr.io.inputValue := 0.U
   csr.io.timerInterruptPending := io.timerInterruptPending
 
   val regFile = Module(new RegFile)
@@ -57,7 +57,7 @@ class CPU extends Module {
   when(stall) {
     stall := false.B
     regFile.io.writeEnable := true.B
-    io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+    io.dataBusBundle.address := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
     io.dataBusBundle.maskLevel := instruction(13, 12)
     // second part of load
     switch(instruction(14, 12)) {
@@ -78,10 +78,10 @@ class CPU extends Module {
       }
     }
   }.elsewhen(csr.io.interruptPending) {
-    csr.io.write_en := true.B
+    csr.io.writeEn := true.B
     csr.io.flipStatusMIE := true.B
     csr.io.address := CSRAddress.mepc
-    csr.io.input_value := pc + 4.U
+    csr.io.inputValue := pc + 4.U
     pc := csr.io.pcOnInterrupt
   }.otherwise {
     switch(instruction(6, 2)) {
@@ -122,15 +122,15 @@ class CPU extends Module {
       }
       is(LOAD) {
         // first part of load: send a load command to addressSpace
-        io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
         io.dataBusBundle.maskLevel := instruction(13, 12)
         // stall once for waiting for the load result come out
         pc := pc
         stall := true.B
       }
       is(STORE) {
-        io.dataBusBundle.addr := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
-        io.dataBusBundle.read_mode := false.B
+        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + immGen.io.result).asUInt()
+        io.dataBusBundle.readMode := false.B
         io.dataBusBundle.maskLevel := instruction(13, 12)
         io.dataBusBundle.dataIn := regFile.io.outputB
       }
@@ -156,7 +156,7 @@ class CPU extends Module {
           is(SystemCommand.MRET) {
             csr.io.flipStatusMIE := true.B
             csr.io.address := CSRAddress.mepc
-            pc := csr.io.output_value
+            pc := csr.io.outputValue
           }
         }
       }
