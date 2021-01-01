@@ -16,7 +16,5 @@ Please answer these questions before submitting your issue. Thanks!
 
 ### 3. What did you see instead (Required)
 
-### 4. What operating system are you using (Required)
-
 
 
