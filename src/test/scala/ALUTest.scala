@@ -20,14 +20,14 @@ class ALUTest(alu: ALU) extends PeekPokeTester(alu) {
     (0x8000000F, 1, SRL, "h40000007".U),
     (0x8000000F, 1, SRA, "hc0000007".U),
     (9, 3, OR, 0xB.U),
-    (9, 3, AND, 0x1.U),
-  )
+    (9, 3, AND, 0x1.U))
   for ((a, b, op, result) <- cases) {
     poke(alu.io.A, a)
     poke(alu.io.B, b)
     poke(alu.io.op, op)
     expect(alu.io.result, result)
-    step(1) // just for render vcd
+    // just for render vcd
+    step(1)
   }
 }
 

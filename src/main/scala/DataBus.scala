@@ -4,8 +4,8 @@ import chisel3._
 // interfaces of controllers which can accessed
 // like a memory, eg. SRAM, CSR and IO
 class DataBusBundle extends Bundle {
-  val read_mode = Input(Bool())
-  val addr = Input(UInt(32.W))
+  val readMode = Input(Bool())
+  val address = Input(UInt(32.W))
   val maskLevel = Input(UInt(2.W))
   val dataIn = Input(UInt(32.W))
   val dataOut = Output(UInt(32.W))
@@ -26,18 +26,18 @@ class DataBus extends Module {
   val sram = Module(new ByteAddressedSRAM)
   val gpio = Module(new GPIOController)
 
-  timer.io.read_mode := true.B
-  timer.io.addr := 0.U(32.W)
+  timer.io.readMode := true.B
+  timer.io.address := 0.U(32.W)
   timer.io.dataIn := 0.U(32.W)
   timer.io.maskLevel := Mask.NONE
 
-  sram.io.read_mode := true.B
-  sram.io.addr := 0.U(32.W)
+  sram.io.readMode := true.B
+  sram.io.address := 0.U(32.W)
   sram.io.dataIn := 0.U(32.W)
   sram.io.maskLevel := Mask.NONE
 
-  gpio.io.read_mode := true.B
-  gpio.io.addr := 0.U(32.W)
+  gpio.io.readMode := true.B
+  gpio.io.address := 0.U(32.W)
   gpio.io.dataIn := 0.U(32.W)
   gpio.io.maskLevel := Mask.NONE
 
@@ -45,23 +45,23 @@ class DataBus extends Module {
   io.gpioOut := gpio.io.dataOut
   io.timerInterruptPending := timer.io.interruptPending
 
-  when(DATA_BASE_ADDRESS.U <= io.addr & io.addr < DATA_END_ADDRESS.U) {
+  when(DATA_BASE_ADDRESS.U <= io.address & io.address < DATA_END_ADDRESS.U) {
     sram.io.dataIn := io.dataIn
-    sram.io.addr := io.addr - DATA_BASE_ADDRESS.U
+    sram.io.address := io.address - DATA_BASE_ADDRESS.U
     sram.io.maskLevel := io.maskLevel
-    sram.io.read_mode := io.read_mode
+    sram.io.readMode := io.readMode
     io.dataOut := sram.io.dataOut
-  }.elsewhen(GPIO_BASE_ADDRESS.U <= io.addr & io.addr < GPIO_END_ADDRESS.U) {
+  }.elsewhen(GPIO_BASE_ADDRESS.U <= io.address & io.address < GPIO_END_ADDRESS.U) {
     gpio.io.dataIn := io.dataIn
-    gpio.io.addr := io.addr - GPIO_BASE_ADDRESS.U
+    gpio.io.address := io.address - GPIO_BASE_ADDRESS.U
     gpio.io.maskLevel := io.maskLevel
-    gpio.io.read_mode := io.read_mode
+    gpio.io.readMode := io.readMode
     io.dataOut := gpio.io.dataOut
   }.otherwise {
     timer.io.dataIn := io.dataIn
-    timer.io.addr := io.addr
+    timer.io.address := io.address
     timer.io.maskLevel := io.maskLevel
-    timer.io.read_mode := io.read_mode
+    timer.io.readMode := io.readMode
     io.dataOut := timer.io.dataOut
   }
 }

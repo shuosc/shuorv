@@ -12,8 +12,8 @@ class Timer extends Module {
 
   io.dataOut := "hdead".U(32.W)
   // todo: support read/write in less than a word, ie. support maskLevel
-  when(io.read_mode) {
-    switch(io.addr) {
+  when(io.readMode) {
+    switch(io.address) {
       is("hbff8".U) {
         io.dataOut := mtime(31, 0)
       }
@@ -28,7 +28,7 @@ class Timer extends Module {
       }
     }
   }.otherwise {
-    switch(io.addr) {
+    switch(io.address) {
       is("hbff8".U) {
         mtime := Cat(mtime(63, 32), io.dataIn)
       }
