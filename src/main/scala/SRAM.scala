@@ -3,6 +3,7 @@ import chisel3.util._
 
 // An sram
 // @see https://www.chisel-lang.org/chisel3/memories.html
+// @see https://github.com/ucb-bar/chisel-tutorial/wiki/Conditional-Assignments-and-Memories
 class SRAM extends Module {
   val io = IO(new Bundle {
     val enable = Input(Bool())

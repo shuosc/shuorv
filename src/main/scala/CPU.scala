@@ -13,6 +13,7 @@ class CPU extends Module {
 
   val io = IO(new CPUBundle)
 
+  // inherit from BSD*.
   val pc = RegInit("h80000000".U(32.W))
   pc := pc + 4.U
   io.programROMBundle.address := pc
@@ -61,20 +62,25 @@ class CPU extends Module {
     io.dataBusBundle.maskLevel := instruction(13, 12)
     // second part of load
     switch(instruction(14, 12)) {
+      // LB
       is("b000".U) {
         regFile.io.input := io.dataBusBundle.dataOut(7, 0)
       }
+      // LH
       is("b001".U) {
         regFile.io.input := io.dataBusBundle.dataOut(15, 0)
       }
+      // LW
       is("b010".U) {
         regFile.io.input := io.dataBusBundle.dataOut
       }
+      // LBU
       is("b100".U) {
-        regFile.io.input := io.dataBusBundle.dataOut
+        regFile.io.input := io.dataBusBundle.dataOut(7, 0).asUInt()
       }
+      // LHU
       is("b101".U) {
-        regFile.io.input := io.dataBusBundle.dataOut
+        regFile.io.input := io.dataBusBundle.dataOut(15, 0).asUInt()
       }
     }
   }.elsewhen(csr.io.interruptPending) {
