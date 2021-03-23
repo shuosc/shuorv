@@ -144,14 +144,14 @@ class CPU extends Module {
         regFile.io.writeEnable := true.B
         alu.io.A := regFile.io.outputA
         alu.io.B := immGen.io.result.asUInt()
-        alu.io.op := Cat(0.U(1), instruction(14, 12))
+        alu.io.op := Cat(instruction(30), instruction(14, 12))
         regFile.io.input := alu.io.result
       }
       is(CALCULATE_REG) {
         regFile.io.writeEnable := true.B
         alu.io.A := regFile.io.outputA
         alu.io.B := regFile.io.outputB
-        alu.io.op := Cat(0.U(1), instruction(14, 12))
+        alu.io.op := Cat(instruction(30), instruction(14, 12))
         regFile.io.input := alu.io.result
       }
       is(FENCE) {
