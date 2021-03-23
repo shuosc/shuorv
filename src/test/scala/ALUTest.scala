@@ -9,7 +9,7 @@ class ALUTest(alu: ALU) extends PeekPokeTester(alu) {
   val cases = Array(
     (1, 2, ADD, 3.U),
     (3, 2, SUB, 1.U),
-    (3, 2, SHL, 12.U),
+    (3, 2, SLL, 12.U),
     (2, 3, SLT, 1.U),
     (2, -3, SLT, 0.U),
     (3, 2, SLT, 0.U),
