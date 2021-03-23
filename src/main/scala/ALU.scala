@@ -19,7 +19,7 @@ class ALU extends Module {
     is(SUB) {
       io.result := io.A.asUInt - io.B.asUInt
     }
-    is(SHL) {
+    is(SLL) {
       io.result := io.A << io.B(4, 0).asUInt
     }
     is(SLT) {
@@ -49,7 +49,7 @@ class ALU extends Module {
 object ALUOperation extends Enumeration {
   val ADD = "b0000".U
   val SUB = "b1000".U
-  val SHL = "b0001".U
+  val SLL = "b0001".U
   val SLT = "b0010".U
   val SLTU = "b0011".U
   val XOR = "b0100".U
