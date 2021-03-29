@@ -19,6 +19,9 @@ class Imm extends Module {
     is("b00000".U) {
       io.result := I
     }
+    is("b11001".U) {
+      io.result := I
+    }
     is("b01000".U) {
       io.result := S
     }
