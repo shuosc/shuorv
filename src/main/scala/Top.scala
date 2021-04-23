@@ -3,9 +3,7 @@ import chisel3._
 class Top extends Module {
   val io = IO(new Bundle {
     val gpio = Output(UInt(32.W))
-    val reset = Input(Bool())
   })
-  withReset(~io.reset) {
   val programROM = Module(new ProgramROM)
   val dataBus = Module(new DataBus)
   io.gpio := dataBus.io.gpioOut
@@ -19,5 +17,4 @@ class Top extends Module {
 
   cpu.io.programROMBundle <> programROM.io
   cpu.io.timerInterruptPending := dataBus.io.timerInterruptPending
-  }
 }
