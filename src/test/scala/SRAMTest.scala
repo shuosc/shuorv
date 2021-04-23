@@ -16,7 +16,11 @@ class SRAMTest(sram: SRAM) extends PeekPokeTester(sram) {
 
     (false.B, 5.U(10.W), Vector(true.B, false.B, false.B, false.B), "h000000e9".U(32.W), "0"),
     (true.B, 4.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "hd8c7b6a5"),
-    (true.B, 5.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "h000000e9"))
+    (true.B, 5.U(10.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "h000000e9"),
+    
+    (false.B, "h0FB8".U(12.W), Vector(true.B, true.B, true.B, true.B), "h01010101".U(32.W), "0"),
+    (true.B, "h0FB8".U(12.W), Vector(false.B, false.B, false.B, false.B), "h00000000".U(32.W), "h01010101")
+    )
   for ((enable, address, mask, dataIn, expectedDataOut) <- cases) {
     poke(sram.io.enable, enable)
     poke(sram.io.addr, address)
