@@ -9,7 +9,7 @@ For any OS which have installed docker, we provide a docker container to build t
 First clone the code and then run
 
 ```shell script
-docker run -it -v $(pwd)/:/shuorv shuorv-builder:latest bash
+docker run -it -v $(pwd)/:/shuorv shuosc/shuorv-builder:latest bash
 ```
 
 under the code path, and the build system is ready.
@@ -17,6 +17,14 @@ under the code path, and the build system is ready.
 Note: If you want to view the waveform,
 you still need a waveform viewer like `gtkwave` under your host os.
 See below for installing suggestions.
+
+Note II: remember: docker won't auto delete containers you stopped,
+so you can always reuse that container by docker restart.
+(to avoid downloading sbt packages again and again.
+`// TODO`
+Or you may create a PR to improve that in shuorv-build)
+
+run `docker ps -aq` to check it. 
 
 ### Ubuntu
 
