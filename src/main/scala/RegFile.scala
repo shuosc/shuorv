@@ -13,18 +13,10 @@ class RegFile extends Module {
 
     val writeEnable = Input(Bool())
   })
-  val regs = Reg(Vec(31, UInt(32.W)))
-  if (io.addressA == 0.U) {
-    io.outputA := 0.U
-  } else {
-    io.outputA := regs(io.addressA - 1.U)
-  }
-  if (io.addressB == 0.U) {
-    io.outputB := 0.U
-  } else {
-    io.outputB := regs(io.addressB - 1.U)
-  }
+  val regs = Reg(Vec(32, UInt(32.W)))
+  io.outputA := regs(io.addressA)
+  io.outputB := regs(io.addressB)
   when(io.writeEnable & io.addressInput.orR()) {
-    regs(io.addressInput - 1.U) := io.input
+    regs(io.addressInput) := io.input
   }
 }
