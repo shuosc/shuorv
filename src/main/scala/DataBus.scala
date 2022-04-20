@@ -16,6 +16,8 @@ class DataBus extends Module {
   val DATA_END_ADDRESS = "h90000000"
   val GPIO_BASE_ADDRESS = "h10012000"
   val GPIO_END_ADDRESS = "h10013000"
+  val SERIAL_BASE_ADDRESS = "h10014000"
+  val SERIAL_END_ADDRESS = "h10015000"
 
   val io = IO(new DataBusBundle {
     val timerInterruptPending = Output(Bool())

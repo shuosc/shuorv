@@ -13,7 +13,7 @@ class CPU extends Module {
 
   val io = IO(new CPUBundle)
 
-  // inherit from BSD*.
+  // start up address here are from BSD's CPU
   val pc = RegInit("h80000000".U(32.W))
   pc := pc + 4.U
   io.programROMBundle.address := pc
