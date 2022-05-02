@@ -13,6 +13,19 @@ object Registers extends Enumeration {
   val STATUS = "b01".U(2.W)
 }
 
+object CountDownCalculator {
+    def countDownBits(maxValue: Int): Int = {
+        var result = 1;
+        var currentMax = 1;
+        while (currentMax < maxValue) {
+            result += 1;
+            currentMax <<= 1;
+            currentMax |= 1;
+        }
+        return result;
+    }
+}
+
 class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) extends Module {
     val io = IO(new DataBusBundle {
         val txWire = Output(Bool())
@@ -23,8 +36,8 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
     val statusOutput = Cat(transmitBufferIndexFromHost, transmitBufferIndexToClient)
     val byteTransmitting = transmitBuffer(transmitBufferIndexToClient)
     val state = RegInit(TransitionState.IDLE)
-    val transitionCountDown = RegInit(0.U(32.W))
-    val bitTransmitingIndex = Reg(UInt(3.W))
+    val transitionCountDown = RegInit(0.U(CountDownCalculator.countDownBits(freqIn / freqOut - 1).W))
+    val bitTransmittingIndex = Reg(UInt(3.W))
 
     io.txWire := false.B
     io.dataOut := 0xdead.U
@@ -42,7 +55,7 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
             when(transitionCountDown === 0.U) {
                 io.txWire := false.B
                 state := TransitionState.BITS
-                bitTransmitingIndex := 0.U
+                bitTransmittingIndex := 0.U
                 transitionCountDown := (freqIn / freqOut - 1).U
             }.otherwise {
                 io.txWire := false.B
@@ -51,17 +64,17 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
         }
         is(TransitionState.BITS) {
             when(transitionCountDown === 0.U) {
-                io.txWire := byteTransmitting(bitTransmitingIndex)
-                when(bitTransmitingIndex === 7.U) {
+                io.txWire := byteTransmitting(bitTransmittingIndex)
+                when(bitTransmittingIndex === 7.U) {
                     state := TransitionState.IDLE
                     transmitBufferIndexToClient := transmitBufferIndexToClient + 1.U
                     transitionCountDown := (freqIn / freqOut - 1).U
                 }.otherwise {
-                    bitTransmitingIndex := bitTransmitingIndex + 1.U
+                    bitTransmittingIndex := bitTransmittingIndex + 1.U
                     transitionCountDown := (freqIn / freqOut - 1).U
                 }
             }.otherwise {
-                io.txWire := byteTransmitting(bitTransmitingIndex)
+                io.txWire := byteTransmitting(bitTransmittingIndex)
                 transitionCountDown := transitionCountDown - 1.U
             }
         }
@@ -71,7 +84,7 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
     }
     when(~io.readMode & io.maskLevel =/= Mask.NONE) {
         when(io.address(1, 0) === Registers.DATA) {
-            // todo: raise expection when transmit buffer is full
+            // todo: raise exception when transmit buffer is full
             transmitBuffer(transmitBufferIndexFromHost) := io.dataIn
             transmitBufferIndexFromHost := transmitBufferIndexFromHost + 1.U
         }
@@ -82,7 +95,7 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
     }
 }
 
-class SerialRecieveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) extends Module {
+class SerialReceiveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) extends Module {
     val io = IO(new DataBusBundle {
         val rxWire = Input(Bool())
     })
@@ -91,9 +104,9 @@ class SerialRecieveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
     val receiveBufferIndexToHost = RegInit(0.U(bufferWidthBits.W))
 
     val state = RegInit(TransitionState.IDLE)
-    val sampleCountDown = Reg(UInt(32.W))
-    val byteRecieving = Reg(Vec(8, Bool()))
-    val bitRecievingIndex = Reg(UInt(3.W))
+    val sampleCountDown = Reg(UInt(CountDownCalculator.countDownBits(freqIn / freqOut - 1).W))
+    val byteReceiving = Reg(Vec(8, Bool()))
+    val bitReceivingIndex = Reg(UInt(3.W))
 
     val increaseReceiveBufferIndexToHost = Reg(Bool())
     val holdStatus = Reg(Bool())
@@ -112,7 +125,7 @@ class SerialRecieveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
         is(TransitionState.START) {
             when(sampleCountDown === 0.U) {
                 sampleCountDown := (freqIn / freqOut - 1).U
-                bitRecievingIndex := 0.U
+                bitReceivingIndex := 0.U
                 state := TransitionState.BITS
             }.otherwise {
                 sampleCountDown := sampleCountDown - 1.U
@@ -121,16 +134,16 @@ class SerialRecieveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
         is(TransitionState.BITS) {
             when(updateBuffer) {
                 state := TransitionState.IDLE
-                receiveBuffer(receiveBufferIndexFromClient) := byteRecieving.asUInt
+                receiveBuffer(receiveBufferIndexFromClient) := byteReceiving.asUInt
                 receiveBufferIndexFromClient := receiveBufferIndexFromClient + 1.U
                 updateBuffer := false.B
             }.elsewhen(sampleCountDown === 0.U) {
-                byteRecieving(bitRecievingIndex) := io.rxWire
+                byteReceiving(bitReceivingIndex) := io.rxWire
                 sampleCountDown := (freqIn / freqOut - 1).U
-                when(bitRecievingIndex === 7.U) {
+                when(bitReceivingIndex === 7.U) {
                     updateBuffer := true.B
                 }.otherwise {
-                    bitRecievingIndex := bitRecievingIndex + 1.U
+                    bitReceivingIndex := bitReceivingIndex + 1.U
                 }
             }.otherwise {
                 sampleCountDown := sampleCountDown - 1.U
@@ -150,7 +163,7 @@ class SerialRecieveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
     }.elsewhen(io.readMode & io.maskLevel =/= Mask.NONE) {
         when(io.address(1, 0) === Registers.DATA) {
             dataOutBuffer := fifoOutput
-            // todo: raise expection when receive buffer is empty
+            // todo: raise exception when receive buffer is empty
             increaseReceiveBufferIndexToHost := true.B
         }.elsewhen(io.address(1, 0) === Registers.STATUS) {
             dataOutBuffer := statusOutput
@@ -168,26 +181,26 @@ class SerialController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) extends 
         val rxWire = Input(Bool())
         val txWire = Output(Bool())
     })
-    val recieveController = Module(new SerialRecieveController(freqIn, freqOut, bufferWidthBits))
+    val receiveController = Module(new SerialReceiveController(freqIn, freqOut, bufferWidthBits))
     val transmitController = Module(new SerialTransmitController(freqIn, freqOut, bufferWidthBits))
-    recieveController.io.rxWire := io.rxWire
-    recieveController.io.readMode := io.readMode
-    recieveController.io.address := io.address(1, 0)
+    receiveController.io.rxWire := io.rxWire
+    receiveController.io.readMode := io.readMode
+    receiveController.io.address := io.address(1, 0)
 
     io.txWire := transmitController.io.txWire
     transmitController.io.readMode := io.readMode
     transmitController.io.address := io.address(1, 0)
     when(io.address(2) === 0.U) {
-        recieveController.io.dataIn := io.dataIn
+        receiveController.io.dataIn := io.dataIn
         transmitController.io.dataIn := 0xdead.U
-        io.dataOut := recieveController.io.dataOut
-        recieveController.io.maskLevel := io.maskLevel
+        io.dataOut := receiveController.io.dataOut
+        receiveController.io.maskLevel := io.maskLevel
         transmitController.io.maskLevel := Mask.NONE
     }.otherwise {
-        recieveController.io.dataIn := 0xdead.U
+        receiveController.io.dataIn := 0xdead.U
         transmitController.io.dataIn := io.dataIn
         io.dataOut := transmitController.io.dataOut
         transmitController.io.maskLevel := io.maskLevel
-        recieveController.io.maskLevel := Mask.NONE
+        receiveController.io.maskLevel := Mask.NONE
     }
 }
