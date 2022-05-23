@@ -745,3 +745,5 @@ $RECYCLE.BIN/
 *.fir
 *.v
 target
+.dccache
+*.thex

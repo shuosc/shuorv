@@ -1,4 +1,4 @@
-name: Scala CI
+name: CI
 
 on:
   push:
@@ -21,10 +21,16 @@ jobs:
         run: |
           sbt scalastyle
           sbt test:scalastyle
-      - name: Run tests
+      - name: Run unit tests
         run: sbt test
       - name: Upload vcd files
         uses: actions/upload-artifact@v2
         with:
           name: vcds
           path: ./test_run_dir/**/*.vcd
+      - name: Set up python for integration test
+        uses: actions/setup-python@v3
+      - name: Install integration test dependency
+        run: pip install jinja2
+      - name: Run integration test
+        run: make integration_test

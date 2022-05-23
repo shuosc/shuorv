@@ -1,0 +1,23 @@
+import chisel3._
+
+class ProgramROMBundle extends Bundle {
+  val address = Input(UInt(32.W))
+  val value = Output(UInt(32.W))
+}
+
+// A temporary program ROM
+// Just for testing, use a real flash rom in real world
+class ProgramROM extends Module {
+  val io = IO(new ProgramROMBundle)
+  {% for section_name, section_content in code_table.items() %}
+  val {{section_name}}Content = VecInit(Array(
+    {% for instruction in section_content %}"h{{instruction}}".U(32.W),
+    {% endfor %}
+  )){% endfor %}
+  {% for section_name, section_start in address_table.items() | sort(attribute='1')%}
+  {% if loop.first %}when(io.address < "h{{"{:x}".format(section_start + 4*(code_table[section_name] | length))}}".U){% else %}.elsewhen(io.address < "h{{"{}".format(section_start + 4*(code_table[section_name] | length))}}".U){% endif %} {
+    io.value := {{section_name}}Content((io.address - "h80000000".U) (31, 2))
+  }{% endfor %}.otherwise {
+    io.value := 0xdead.U
+  }
+}

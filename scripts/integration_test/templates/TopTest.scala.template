@@ -4,7 +4,8 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class TopTest(top: Top) extends PeekPokeTester(top) {
   var expected = List(
-    BigInt("1")
+    {% for e in expected %}BigInt("{{e}}"),
+    {% endfor %}
   )
   var last = BigInt(0)
   var countDown = 65536

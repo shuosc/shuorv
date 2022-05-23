@@ -18,3 +18,7 @@ class Top extends Module {
   cpu.io.programROMBundle <> programROM.io
   cpu.io.timerInterruptPending := dataBus.io.timerInterruptPending
 }
+
+object TopDriver extends App {
+  (new chisel3.stage.ChiselStage).emitVerilog(new Top, args)
+}
