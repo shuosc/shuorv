@@ -13,7 +13,7 @@ class CPU extends Module {
 
   val io = IO(new CPUBundle)
 
-  // inherit from BSD*.
+  // start up address here are from BSD's CPU
   val pc = RegInit("h80000000".U(32.W))
   pc := pc + 4.U
   io.programROMBundle.address := pc
@@ -144,7 +144,11 @@ class CPU extends Module {
         regFile.io.writeEnable := true.B
         alu.io.A := regFile.io.outputA
         alu.io.B := immGen.io.result.asUInt()
-        alu.io.op := Cat(instruction(30), instruction(14, 12))
+        when(instruction(14, 12) === "b001".U || instruction(14, 12) === "b101".U) {
+          alu.io.op := Cat(instruction(30), instruction(14, 12))
+        }.otherwise {
+          alu.io.op := Cat(0.U(1.W), instruction(14, 12))
+        }
         regFile.io.input := alu.io.result
       }
       is(CALCULATE_REG) {
