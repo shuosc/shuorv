@@ -50,7 +50,7 @@ class CPU extends Module {
   val alu = Module(new ALU)
   alu.io.A := 0xdead.U
   alu.io.B := 0xdead.U
-  alu.io.op := uOP.NOP
+  alu.io.op := UOp.NOP
 
   val stall = RegInit(false.B)
 
@@ -61,19 +61,19 @@ class CPU extends Module {
     io.dataBusBundle.maskLevel := decoder.maskLevel
     // second part of load
     switch(decoder.uOp) {
-      is(uOP.LB) {
+      is(UOp.LB) {
         regFile.io.input := io.dataBusBundle.dataOut(7, 0)
       }
-      is(uOP.LH) {
+      is(UOp.LH) {
         regFile.io.input := io.dataBusBundle.dataOut(15, 0)
       }
-      is(uOP.LW) {
+      is(UOp.LW) {
         regFile.io.input := io.dataBusBundle.dataOut
       }
-      is(uOP.LBU) {
+      is(UOp.LBU) {
         regFile.io.input := io.dataBusBundle.dataOut(7, 0).asUInt()
       }
-      is(uOP.LHU) {
+      is(UOp.LHU) {
         regFile.io.input := io.dataBusBundle.dataOut(15, 0).asUInt()
       }
     }
@@ -92,7 +92,7 @@ class CPU extends Module {
       is(InstType.AUIPC) {
         alu.io.A := decoder.immData
         alu.io.B := pc
-        alu.io.op := uOP.ADD
+        alu.io.op := UOp.ADD
 
         regFile.io.input := alu.io.result
         regFile.io.writeEnable := true.B
@@ -100,7 +100,7 @@ class CPU extends Module {
       is(InstType.JAL) {
         alu.io.A := 4.U
         alu.io.B := pc
-        alu.io.op := uOP.ADD
+        alu.io.op := UOp.ADD
 
         regFile.io.input := alu.io.result
         regFile.io.writeEnable := true.B
@@ -109,7 +109,7 @@ class CPU extends Module {
       is(InstType.JALR) {
         alu.io.A := regFile.io.outputA
         alu.io.B := decoder.immData
-        alu.io.op := uOP.ADD
+        alu.io.op := UOp.ADD
 
         regFile.io.input := pc + 4.U
         regFile.io.writeEnable := true.B
@@ -146,7 +146,7 @@ class CPU extends Module {
       }
       is(InstType.SYSTEM) {
         switch(decoder.uOp) {
-          is(uOP.MRET) {
+          is(UOp.MRET) {
             csr.io.flipStatusMIE := true.B
             csr.io.address := CSRAddress.mepc
             pc := csr.io.outputValue

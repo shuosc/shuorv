@@ -4,7 +4,7 @@ import chisel3.util._
 
 class Decoder extends Bundle {
   import DecodeTable._
-  val uOp      = uOP()
+  val uOp      = UOp()
   val instType = InstType()
   val needImm = Bool()
   val rs1Addr = UInt(5.W)
@@ -109,65 +109,67 @@ object Instructions extends Enumeration {
 
 object DecodeTable {
   import Instructions._
-  val decodeDefault = List(uOP.NOP, InstType.NONE, ImmSel.NOIMM)
+  val decodeDefault = List(UOp.NOP, InstType.NONE, ImmSel.NOIMM)
   val decodeTable = Array(
-    BEQ        -> List(uOP.BEQ       , InstType.BRANCH   , ImmSel.B),
-    BNE        -> List(uOP.BNE       , InstType.BRANCH   , ImmSel.B),
-    BLT        -> List(uOP.BLT       , InstType.BRANCH   , ImmSel.B),
-    BGE        -> List(uOP.BGE       , InstType.BRANCH   , ImmSel.B),
-    BLTU       -> List(uOP.BLTU      , InstType.BRANCH   , ImmSel.B),
-    BGEU       -> List(uOP.BGEU      , InstType.BRANCH   , ImmSel.B),
-    JALR       -> List(uOP.JALR      , InstType.JALR     , ImmSel.I),
-    JAL        -> List(uOP.JAL       , InstType.JAL      , ImmSel.J),
-    LUI        -> List(uOP.LUI       , InstType.LUI      , ImmSel.U),
-    AUIPC      -> List(uOP.AUIPC     , InstType.AUIPC    , ImmSel.U),
-    ADDI       -> List(uOP.ADD       , InstType.CALCULATE, ImmSel.I),
-    SLLI       -> List(uOP.SLL       , InstType.CALCULATE, ImmSel.SHAMT),
-    SLTI       -> List(uOP.SLT       , InstType.CALCULATE, ImmSel.I),
-    SLTIU      -> List(uOP.SLTU      , InstType.CALCULATE, ImmSel.I),
-    XORI       -> List(uOP.XOR       , InstType.CALCULATE, ImmSel.I),
-    SRLI       -> List(uOP.SRL       , InstType.CALCULATE, ImmSel.SHAMT),
-    SRAI       -> List(uOP.SRA       , InstType.CALCULATE, ImmSel.SHAMT),
-    ORI        -> List(uOP.OR        , InstType.CALCULATE, ImmSel.I),
-    ANDI       -> List(uOP.AND       , InstType.CALCULATE, ImmSel.I),
-    ADD        -> List(uOP.ADD       , InstType.CALCULATE, ImmSel.NOIMM),
-    SUB        -> List(uOP.SUB       , InstType.CALCULATE, ImmSel.NOIMM),
-    SLL        -> List(uOP.SLL       , InstType.CALCULATE, ImmSel.NOIMM),
-    SLT        -> List(uOP.SLT       , InstType.CALCULATE, ImmSel.NOIMM),
-    SLTU       -> List(uOP.SLTU      , InstType.CALCULATE, ImmSel.NOIMM),
-    XOR        -> List(uOP.XOR       , InstType.CALCULATE, ImmSel.NOIMM),
-    SRL        -> List(uOP.SRL       , InstType.CALCULATE, ImmSel.NOIMM),
-    SRA        -> List(uOP.SRA       , InstType.CALCULATE, ImmSel.NOIMM),
-    OR         -> List(uOP.OR        , InstType.CALCULATE, ImmSel.NOIMM),
-    AND        -> List(uOP.AND       , InstType.CALCULATE, ImmSel.NOIMM),
-    LB         -> List(uOP.LB        , InstType.LOAD     , ImmSel.I),
-    LH         -> List(uOP.LH        , InstType.LOAD     , ImmSel.I),
-    LW         -> List(uOP.LW        , InstType.LOAD     , ImmSel.I),
-    LBU        -> List(uOP.LBU       , InstType.LOAD     , ImmSel.I),
-    LHU        -> List(uOP.LHU       , InstType.LOAD     , ImmSel.I),
-    LWU        -> List(uOP.LWU       , InstType.LOAD     , ImmSel.I),
-    SB         -> List(uOP.SB        , InstType.STORE    , ImmSel.S),
-    SH         -> List(uOP.SH        , InstType.STORE    , ImmSel.S),
-    SW         -> List(uOP.SW        , InstType.STORE    , ImmSel.S),
-    CSRRW      -> List(uOP.CSRRW     , InstType.CALCULATE, ImmSel.NOIMM),
-    CSRRS      -> List(uOP.CSRRS     , InstType.CALCULATE, ImmSel.NOIMM),
-    CSRRC      -> List(uOP.CSRRC     , InstType.CALCULATE, ImmSel.NOIMM),
-    CSRRWI     -> List(uOP.CSRRW     , InstType.CALCULATE, ImmSel.ZIMM),
-    CSRRSI     -> List(uOP.CSRRS     , InstType.CALCULATE, ImmSel.ZIMM),
-    CSRRCI     -> List(uOP.CSRRC     , InstType.CALCULATE, ImmSel.ZIMM),
-    FENCE      -> List(uOP.FENCE     , InstType.FENCE    , ImmSel.NOIMM),
-    FENCE_I    -> List(uOP.FENCE_I   , InstType.FENCE    , ImmSel.NOIMM),
-    ECALL      -> List(uOP.ECALL     , InstType.SYSTEM   , ImmSel.NOIMM),
-    EBREAK     -> List(uOP.EBREAK    , InstType.SYSTEM   , ImmSel.NOIMM),
-    MRET       -> List(uOP.MRET      , InstType.SYSTEM   , ImmSel.NOIMM),
-    SRET       -> List(uOP.SRET      , InstType.SYSTEM   , ImmSel.NOIMM),
-    SFENCE_VMA -> List(uOP.SFENCE_VMA, InstType.FENCE    , ImmSel.NOIMM),
-    WFI        -> List(uOP.WFI       , InstType.SYSTEM   , ImmSel.NOIMM)
+    BEQ        -> List(UOp.BEQ       , InstType.BRANCH   , ImmSel.B),
+    BNE        -> List(UOp.BNE       , InstType.BRANCH   , ImmSel.B),
+    BLT        -> List(UOp.BLT       , InstType.BRANCH   , ImmSel.B),
+    BGE        -> List(UOp.BGE       , InstType.BRANCH   , ImmSel.B),
+    BLTU       -> List(UOp.BLTU      , InstType.BRANCH   , ImmSel.B),
+    BGEU       -> List(UOp.BGEU      , InstType.BRANCH   , ImmSel.B),
+    JALR       -> List(UOp.JALR      , InstType.JALR     , ImmSel.I),
+    JAL        -> List(UOp.JAL       , InstType.JAL      , ImmSel.J),
+    LUI        -> List(UOp.LUI       , InstType.LUI      , ImmSel.U),
+    AUIPC      -> List(UOp.AUIPC     , InstType.AUIPC    , ImmSel.U),
+    ADDI       -> List(UOp.ADD       , InstType.CALCULATE, ImmSel.I),
+    SLLI       -> List(UOp.SLL       , InstType.CALCULATE, ImmSel.SHAMT),
+    SLTI       -> List(UOp.SLT       , InstType.CALCULATE, ImmSel.I),
+    SLTIU      -> List(UOp.SLTU      , InstType.CALCULATE, ImmSel.I),
+    XORI       -> List(UOp.XOR       , InstType.CALCULATE, ImmSel.I),
+    SRLI       -> List(UOp.SRL       , InstType.CALCULATE, ImmSel.SHAMT),
+    SRAI       -> List(UOp.SRA       , InstType.CALCULATE, ImmSel.SHAMT),
+    ORI        -> List(UOp.OR        , InstType.CALCULATE, ImmSel.I),
+    ANDI       -> List(UOp.AND       , InstType.CALCULATE, ImmSel.I),
+    ADD        -> List(UOp.ADD       , InstType.CALCULATE, ImmSel.NOIMM),
+    SUB        -> List(UOp.SUB       , InstType.CALCULATE, ImmSel.NOIMM),
+    SLL        -> List(UOp.SLL       , InstType.CALCULATE, ImmSel.NOIMM),
+    SLT        -> List(UOp.SLT       , InstType.CALCULATE, ImmSel.NOIMM),
+    SLTU       -> List(UOp.SLTU      , InstType.CALCULATE, ImmSel.NOIMM),
+    XOR        -> List(UOp.XOR       , InstType.CALCULATE, ImmSel.NOIMM),
+    SRL        -> List(UOp.SRL       , InstType.CALCULATE, ImmSel.NOIMM),
+    SRA        -> List(UOp.SRA       , InstType.CALCULATE, ImmSel.NOIMM),
+    OR         -> List(UOp.OR        , InstType.CALCULATE, ImmSel.NOIMM),
+    AND        -> List(UOp.AND       , InstType.CALCULATE, ImmSel.NOIMM),
+    LB         -> List(UOp.LB        , InstType.LOAD     , ImmSel.I),
+    LH         -> List(UOp.LH        , InstType.LOAD     , ImmSel.I),
+    LW         -> List(UOp.LW        , InstType.LOAD     , ImmSel.I),
+    LBU        -> List(UOp.LBU       , InstType.LOAD     , ImmSel.I),
+    LHU        -> List(UOp.LHU       , InstType.LOAD     , ImmSel.I),
+    LWU        -> List(UOp.LWU       , InstType.LOAD     , ImmSel.I),
+    SB         -> List(UOp.SB        , InstType.STORE    , ImmSel.S),
+    SH         -> List(UOp.SH        , InstType.STORE    , ImmSel.S),
+    SW         -> List(UOp.SW        , InstType.STORE    , ImmSel.S),
+    CSRRW      -> List(UOp.CSRRW     , InstType.CALCULATE, ImmSel.NOIMM),
+    CSRRS      -> List(UOp.CSRRS     , InstType.CALCULATE, ImmSel.NOIMM),
+    CSRRC      -> List(UOp.CSRRC     , InstType.CALCULATE, ImmSel.NOIMM),
+    CSRRWI     -> List(UOp.CSRRW     , InstType.CALCULATE, ImmSel.ZIMM),
+    CSRRSI     -> List(UOp.CSRRS     , InstType.CALCULATE, ImmSel.ZIMM),
+    CSRRCI     -> List(UOp.CSRRC     , InstType.CALCULATE, ImmSel.ZIMM),
+    FENCE      -> List(UOp.FENCE     , InstType.FENCE    , ImmSel.NOIMM),
+    FENCE_I    -> List(UOp.FENCE_I   , InstType.FENCE    , ImmSel.NOIMM),
+    ECALL      -> List(UOp.ECALL     , InstType.SYSTEM   , ImmSel.NOIMM),
+    EBREAK     -> List(UOp.EBREAK    , InstType.SYSTEM   , ImmSel.NOIMM),
+    MRET       -> List(UOp.MRET      , InstType.SYSTEM   , ImmSel.NOIMM),
+    SRET       -> List(UOp.SRET      , InstType.SYSTEM   , ImmSel.NOIMM),
+    SFENCE_VMA -> List(UOp.SFENCE_VMA, InstType.FENCE    , ImmSel.NOIMM),
+    WFI        -> List(UOp.WFI       , InstType.SYSTEM   , ImmSel.NOIMM)
 
   )
 }
 
-object uOP extends ChiselEnum {
+
+//micro operations
+object UOp extends ChiselEnum {
   val
   NOP,
   //branch and jump

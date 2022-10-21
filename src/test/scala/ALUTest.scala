@@ -4,7 +4,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class ALUTest(alu: ALU) extends PeekPokeTester(alu) {
 
-  import uOP._
+  import UOp._
 
   val cases = Array(
     (1, 2, ADD, 3.U),
