@@ -9,7 +9,6 @@ class CPUBundle extends Bundle {
 
 class CPU extends Module {
 
-  //import CommandType._
 
   val io = IO(new CPUBundle)
 
@@ -37,16 +36,16 @@ class CPU extends Module {
   csr.io.timerInterruptPending := io.timerInterruptPending
 
   val regFile = Module(new RegFile)
-  regFile.io.addressInput := decoder.rd_addr
-  regFile.io.addressA := decoder.rs1_addr
-  regFile.io.addressB := decoder.rs2_addr
+  regFile.io.addressInput := decoder.rdAddr
+  regFile.io.addressA := decoder.rs1Addr
+  regFile.io.addressB := decoder.rs2Addr
   regFile.io.input := 0xdead.U
   regFile.io.writeEnable := false.B
 
   val branchCondition = Module(new BranchCondition)
   branchCondition.io.A := regFile.io.outputA
   branchCondition.io.B := regFile.io.outputB
-  branchCondition.io.op := decoder.uop
+  branchCondition.io.op := decoder.uOp
 
   val alu = Module(new ALU)
   alu.io.A := 0xdead.U
@@ -58,27 +57,22 @@ class CPU extends Module {
   when(stall) {
     stall := false.B
     regFile.io.writeEnable := true.B
-    io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.imm_data.asSInt()).asUInt()
+    io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.immData.asSInt()).asUInt()
     io.dataBusBundle.maskLevel := decoder.maskLevel
     // second part of load
-    switch(decoder.uop) {
-      // LB
+    switch(decoder.uOp) {
       is(uOP.LB) {
         regFile.io.input := io.dataBusBundle.dataOut(7, 0)
       }
-      // LH
       is(uOP.LH) {
         regFile.io.input := io.dataBusBundle.dataOut(15, 0)
       }
-      // LW
       is(uOP.LW) {
         regFile.io.input := io.dataBusBundle.dataOut
       }
-      // LBU
       is(uOP.LBU) {
         regFile.io.input := io.dataBusBundle.dataOut(7, 0).asUInt()
       }
-      // LHU
       is(uOP.LHU) {
         regFile.io.input := io.dataBusBundle.dataOut(15, 0).asUInt()
       }
@@ -90,68 +84,68 @@ class CPU extends Module {
     csr.io.inputValue := pc + 4.U
     pc := csr.io.pcOnInterrupt
   }.otherwise {
-    switch(decoder.inst_type) {
-      is(InstType.lui) {
-        regFile.io.input := decoder.imm_data
+    switch(decoder.instType) {
+      is(InstType.LUI) {
+        regFile.io.input := decoder.immData
         regFile.io.writeEnable := true.B
       }
-      is(InstType.auipc) {
-        alu.io.A := decoder.imm_data
+      is(InstType.AUIPC) {
+        alu.io.A := decoder.immData
         alu.io.B := pc
         alu.io.op := uOP.ADD
 
         regFile.io.input := alu.io.result
         regFile.io.writeEnable := true.B
       }
-      is(InstType.jal) {
+      is(InstType.JAL) {
         alu.io.A := 4.U
         alu.io.B := pc
         alu.io.op := uOP.ADD
 
         regFile.io.input := alu.io.result
         regFile.io.writeEnable := true.B
-        pc := (pc.asSInt() + decoder.imm_data.asSInt()).asUInt()
+        pc := (pc.asSInt() + decoder.immData.asSInt()).asUInt()
       }
-      is(InstType.jalr) {
+      is(InstType.JALR) {
         alu.io.A := regFile.io.outputA
-        alu.io.B := decoder.imm_data
+        alu.io.B := decoder.immData
         alu.io.op := uOP.ADD
 
         regFile.io.input := pc + 4.U
         regFile.io.writeEnable := true.B
         pc := alu.io.result & "hfffffffe".U
       }
-      is(InstType.branch) {
+      is(InstType.BRANCH) {
         when(branchCondition.io.take) {
-          pc := (pc.asSInt() + decoder.imm_data.asSInt()).asUInt()
+          pc := (pc.asSInt() + decoder.immData.asSInt()).asUInt()
         }
       }
-      is(InstType.load) {
+      is(InstType.LOAD) {
         // first part of load: send a load command to addressSpace
-        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.imm_data.asSInt()).asUInt()
+        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.immData.asSInt()).asUInt()
         io.dataBusBundle.maskLevel := decoder.maskLevel
         // stall once for waiting for the load result come out
         pc := pc
         stall := true.B
       }
-      is(InstType.store) {
-        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.imm_data.asSInt()).asUInt()
+      is(InstType.STORE) {
+        io.dataBusBundle.address := (regFile.io.outputA.asSInt() + decoder.immData.asSInt()).asUInt()
         io.dataBusBundle.readMode := false.B
         io.dataBusBundle.maskLevel := decoder.maskLevel
         io.dataBusBundle.dataIn := regFile.io.outputB
       }
-      is(InstType.calculate) {
+      is(InstType.CALCULATE) {
         regFile.io.writeEnable := true.B
         alu.io.A := regFile.io.outputA
-        alu.io.B := Mux(decoder.need_imm,decoder.imm_data,regFile.io.outputB)
-        alu.io.op := decoder.uop
+        alu.io.B := Mux(decoder.needImm,decoder.immData,regFile.io.outputB)
+        alu.io.op := decoder.uOp
         regFile.io.input := alu.io.result
       }
-      is(InstType.fence) {
+      is(InstType.FENCE) {
         // we don't have multicore, pipeline, etc. now, so we don't need this command
       }
-      is(InstType.system) {
-        switch(decoder.uop) {
+      is(InstType.SYSTEM) {
+        switch(decoder.uOp) {
           is(uOP.MRET) {
             csr.io.flipStatusMIE := true.B
             csr.io.address := CSRAddress.mepc
@@ -163,22 +157,3 @@ class CPU extends Module {
   }
 }
 
-//object CommandType extends Enumeration {
-//  val LUI = "b01101".U
-//  val AUIPC = "b00101".U
-//  val JAL = "b11011".U
-//  val JALR = "b11001".U
-//  val BRANCH = "b11000".U
-//  val LOAD = "b00000".U
-//  val STORE = "b01000".U
-//  val CALCULATE_IMM = "b00100".U
-//  val CALCULATE_REG = "b01100".U
-//  val FENCE = "b00011".U
-//  val SYSTEM = "b11100".U
-//}
-
-//object SystemCommand extends Enumeration {
-//  val MRET = "h302".U
-//  val ECALL = "b000".U
-//  val EBREAK = "b001".U
-//}
