@@ -3,58 +3,44 @@ import chisel3.util._
 
 class ALU extends Module {
 
-  import ALUOperation._
-
   val io = IO(new Bundle {
     val A = Input(Bits(32.W))
     val B = Input(Bits(32.W))
-    val op = Input(Bits(4.W))
+    val op = Input(UOp())
     val result = Output(Bits(32.W))
   })
   io.result := 0xdead.U
   switch(io.op) {
-    is(ADD) {
+    is(UOp.ADD) {
       io.result := io.A.asUInt + io.B.asUInt
     }
-    is(SUB) {
+    is(UOp.SUB) {
       io.result := io.A.asUInt - io.B.asUInt
     }
-    is(SLL) {
+    is(UOp.SLL) {
       io.result := io.A << io.B(4, 0).asUInt
     }
-    is(SLT) {
+    is(UOp.SLT) {
       io.result := io.A.asSInt < io.B.asSInt
     }
-    is(SLTU) {
+    is(UOp.SLTU) {
       io.result := io.A.asUInt < io.B.asUInt
     }
-    is(XOR) {
+    is(UOp.XOR) {
       io.result := io.A ^ io.B
     }
-    is(SRL) {
+    is(UOp.SRL) {
       io.result := io.A >> io.B(4, 0).asUInt
     }
-    is(SRA) {
+    is(UOp.SRA) {
       io.result := (io.A.asSInt >> io.B(4, 0)).asUInt()
     }
-    is(OR) {
+    is(UOp.OR) {
       io.result := io.A | io.B
     }
-    is(AND) {
+    is(UOp.AND) {
       io.result := io.A & io.B
     }
   }
 }
 
-object ALUOperation extends Enumeration {
-  val ADD = "b0000".U
-  val SUB = "b1000".U
-  val SLL = "b0001".U
-  val SLT = "b0010".U
-  val SLTU = "b0011".U
-  val XOR = "b0100".U
-  val SRL = "b0101".U
-  val SRA = "b1101".U
-  val OR = "b0110".U
-  val AND = "b0111".U
-}
