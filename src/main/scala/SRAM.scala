@@ -75,7 +75,7 @@ class ByteAddressedSRAM extends Module {
     }
     is(HALF_WORD) {
       // the last 1 bit must be zero, currently we just ignore it
-      // since the spec says the behaviour in this situation is implementation defined
+      // since the spec says the behavior in this situation is implementation defined
       // todo: either support unaligned write or raise an exception
       when(io.readMode) {
         io.dataOut := Mux(io.address(1),
@@ -91,7 +91,7 @@ class ByteAddressedSRAM extends Module {
     }
     is(WORD) {
       // the last 2 bits must be zero, currently we just ignore it
-      // since the spec says the behaviour in this situation is implementation defined
+      // since the spec says the behavior in this situation is implementation defined
       // todo: either support unaligned write or raise an exception
       when(io.readMode) {
         io.dataOut := Cat(inner.io.dataOut(3), inner.io.dataOut(2), inner.io.dataOut(1), inner.io.dataOut(0))
