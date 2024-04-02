@@ -15,14 +15,14 @@ object Registers extends Enumeration {
 
 object CountDownCalculator {
     def countDownBits(maxValue: Int): Int = {
-        var result = 1;
-        var currentMax = 1;
+        var result = 1
+        var currentMax = 1
         while (currentMax < maxValue) {
-            result += 1;
-            currentMax <<= 1;
-            currentMax |= 1;
+            result += 1
+            currentMax <<= 1
+            currentMax |= 1
         }
-        return result;
+        result
     }
 }
 
@@ -80,6 +80,9 @@ class SerialTransmitController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) 
         }
         is(TransitionState.PARITY) {
             // unimplemented
+            state := TransitionState.IDLE
+            io.txWire := true.B
+            transitionCountDown := (freqIn / freqOut - 1).U
         }
     }
     when(~io.readMode & io.maskLevel =/= Mask.NONE) {
@@ -113,8 +116,6 @@ class SerialReceiveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
     val updateBuffer = Reg(Bool())
     val fifoOutput = receiveBuffer(receiveBufferIndexToHost)
     val statusOutput = Cat(receiveBufferIndexToHost, receiveBufferIndexFromClient)
-    val dataOutBuffer = Reg(UInt(32.W))
-    io.dataOut := dataOutBuffer
     switch(state) {
         is(TransitionState.IDLE) {
             when(io.rxWire === 0.U) {
@@ -151,28 +152,30 @@ class SerialReceiveController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) e
         }
         is(TransitionState.PARITY) {
             // unimplemented
+            state := TransitionState.IDLE
+            updateBuffer := false.B
         }
     }
     when(holdStatus) {
-        dataOutBuffer := statusOutput
+        io.dataOut := statusOutput
         holdStatus := false.B
     }.elsewhen(increaseReceiveBufferIndexToHost) {
-        dataOutBuffer := fifoOutput
+        io.dataOut := fifoOutput
         receiveBufferIndexToHost := receiveBufferIndexToHost + 1.U
         increaseReceiveBufferIndexToHost := false.B
     }.elsewhen(io.readMode & io.maskLevel =/= Mask.NONE) {
         when(io.address(1, 0) === Registers.DATA) {
-            dataOutBuffer := fifoOutput
+            io.dataOut := fifoOutput
             // todo: raise exception when receive buffer is empty
             increaseReceiveBufferIndexToHost := true.B
         }.elsewhen(io.address(1, 0) === Registers.STATUS) {
-            dataOutBuffer := statusOutput
+            io.dataOut := statusOutput
             holdStatus := true.B
         }.otherwise {
-            dataOutBuffer := 0xef.U(32.W)
+            io.dataOut := 0xef.U(32.W)
         }
     }.otherwise {
-        dataOutBuffer := 0xad.U(32.W)
+        io.dataOut := 0xad.U(32.W)
     }
 }
 
@@ -190,17 +193,21 @@ class SerialController(freqIn: Int, freqOut: Int, bufferWidthBits: Int) extends 
     io.txWire := transmitController.io.txWire
     transmitController.io.readMode := io.readMode
     transmitController.io.address := io.address(1, 0)
-    when(io.address(2) === 0.U) {
-        receiveController.io.dataIn := io.dataIn
-        transmitController.io.dataIn := 0xdead.U
+    when(io.address(8) === 0.U) {
         io.dataOut := receiveController.io.dataOut
+
+        receiveController.io.dataIn := io.dataIn
         receiveController.io.maskLevel := io.maskLevel
+
+        transmitController.io.dataIn := 0xdead.U
         transmitController.io.maskLevel := Mask.NONE
     }.otherwise {
-        receiveController.io.dataIn := 0xdead.U
-        transmitController.io.dataIn := io.dataIn
         io.dataOut := transmitController.io.dataOut
+
+        transmitController.io.dataIn := io.dataIn
         transmitController.io.maskLevel := io.maskLevel
+
+        receiveController.io.dataIn := 0xdead.U
         receiveController.io.maskLevel := Mask.NONE
     }
 }

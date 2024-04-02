@@ -53,7 +53,7 @@ class DataBus extends Module {
 
   io.dataOut := 0xdead.U(32.W)
   io.gpioOut := gpio.io.dataOut
-  
+
   io.timerInterruptPending := timer.io.interruptPending
   io.serialTx := serial.io.txWire
   serial.io.rxWire := io.serialRx

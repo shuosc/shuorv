@@ -96,7 +96,7 @@ class SerialTransmitControllerTest(serialTransmitController: SerialTransmitContr
       }
       // end bit
       step(38400 / 9600)
-      return result
+      result
     }
 
     poke(serialTransmitController.io.readMode, false)
@@ -149,13 +149,13 @@ class SerialControllerTest(serialController: SerialController) extends PeekPokeT
   // first send the byte 0x55 to the tx FIFO buffer
   poke(serialController.io.rxWire, true)
   poke(serialController.io.readMode, false)
-  poke(serialController.io.address, "b100".U)
+  poke(serialController.io.address, "b1_0000_00_00".U)
   poke(serialController.io.maskLevel, Mask.WORD)
   poke(serialController.io.dataIn, 0x55.U)
   step(1)
   // the transmitter's transmitBufferIndexFromHost should be 1
   poke(serialController.io.readMode, true.B)
-  poke(serialController.io.address, "b101".U)
+  poke(serialController.io.address, "b1_0000_00_01".U)
   step(1)
   expect(serialController.io.dataOut, "b00000000_00000000_000000_0000_01_00".U)
   // txWire should been pull down to show transmitting has been started
@@ -195,17 +195,16 @@ class SerialControllerTest(serialController: SerialController) extends PeekPokeT
   step(1)
   // we should read the data successfully from the receive buffer
   poke(serialController.io.readMode, true.B)
-  poke(serialController.io.address, "b000".U)
+  poke(serialController.io.address, "b0_0000_0000".U)
   poke(serialController.io.maskLevel, Mask.WORD)
   step(1)
   expect(serialController.io.dataOut, 0xAA.U)
-  step(1)
   // check the status register
-  poke(serialController.io.address, "b001".U)
+  poke(serialController.io.address, "b0_0000_0001".U)
   step(1)
   expect(serialController.io.dataOut, "b00000000_00000000_000000_0000_01_01".U)
   step(1)
-  poke(serialController.io.address, "b101".U)
+  poke(serialController.io.address, "b1_0000_0001".U)
   step(1)
   expect(serialController.io.dataOut, "b00000000_00000000_000000_0000_01_01".U)
 }
